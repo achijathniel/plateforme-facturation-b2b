@@ -15,6 +15,24 @@ services:
       - db
       - redis
 
+  queue:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: backend_queue
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: php artisan queue:work redis --sleep=3 --tries=3 --timeout=90
+    volumes:
+      - ./:/var/www/html
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - backend_network
+    depends_on:
+      - app
+      - redis
+      - db
+
   web:
     image: nginx:alpine
     container_name: backend_web

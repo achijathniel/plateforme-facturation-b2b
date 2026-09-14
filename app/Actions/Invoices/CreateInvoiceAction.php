@@ -4,6 +4,7 @@ namespace App\Actions\Invoices;
 
 use App\DTOs\Invoices\CreateInvoiceDTO;
 use App\Enums\InvoiceStatus;
+use App\Jobs\SendInvoiceNotificationJob;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +21,7 @@ class CreateInvoiceAction
      */
     public function execute(CreateInvoiceDTO $dto): Invoice
     {
-        return DB::transaction(function () use ($dto) {
+        $invoice = DB::transaction(function () use ($dto) {
             // 1. Calculs financiers stricts avec bcmath
             $subtotal = '0.00';
             $itemsData = [];
@@ -81,5 +82,10 @@ class CreateInvoiceAction
 
             return $invoice->load(['organization', 'items']);
         });
+
+        // 5. Expédition asynchrone du job de notification via Redis
+        SendInvoiceNotificationJob::dispatch($invoice);
+
+        return $invoice;
     }
 }
