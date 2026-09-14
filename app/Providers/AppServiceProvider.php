@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Repositories\Contracts\InvoiceRepositoryInterface;
 use App\Repositories\Eloquent\InvoiceRepository;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -25,6 +26,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Interdire le Lazy Loading hors production pour stopper immédiatement le problème N+1
+        Model::preventLazyLoading(! $this->app->isProduction());
+
         // Rate limiter anti-brute-force pour l'authentification API (5 tentatives / minute par IP)
         RateLimiter::for('api-login', function (Request $request) {
             return Limit::perMinute(5)->by($request->ip());
