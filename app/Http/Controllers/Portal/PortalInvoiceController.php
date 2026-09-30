@@ -6,8 +6,11 @@ namespace App\Http\Controllers\Portal;
 
 use App\Actions\Invoices\CreateInvoiceAction;
 use App\Actions\Invoices\SendInvoiceAction;
+use App\Actions\Portal\GetPortalInvoicesAction;
+use App\Enums\InvoiceStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Invoices\StoreInvoiceRequest;
+use App\Http\Requests\Portal\PortalInvoiceFilterRequest;
 use App\Models\Invoice;
 use App\Repositories\Contracts\InvoiceRepositoryInterface;
 use Illuminate\Http\RedirectResponse;
@@ -20,14 +23,16 @@ final class PortalInvoiceController extends Controller
 {
     /**
      * Affiche la liste des factures appartenant à l'organisation du comptable.
+     * Respecte le pattern Skinny Controller avec Form Request, DTO et Action dédiés.
      */
     public function index(
-        Request $request,
-        InvoiceRepositoryInterface $invoiceRepository
+        PortalInvoiceFilterRequest $request,
+        GetPortalInvoicesAction $action
     ): Response {
         Gate::authorize('viewAny', Invoice::class);
 
-        $invoices = $invoiceRepository->paginateForUser($request->user(), 15);
+        $filterData = $request->toDTO();
+        $invoices = $action->execute($request->user(), $filterData);
 
         return Inertia::render('Portal/Invoices/Index', [
             'invoices'     => $invoices,
@@ -35,6 +40,17 @@ final class PortalInvoiceController extends Controller
                 'id'   => $request->user()->organization?->id,
                 'name' => $request->user()->organization?->name ?? 'Mon Entreprise',
             ],
+            'filters'      => [
+                'search'         => $filterData->search,
+                'status'         => $filterData->status?->value,
+                'per_page'       => $filterData->perPage,
+                'sort_by'        => $filterData->sortBy,
+                'sort_direction' => $filterData->sortDirection,
+            ],
+            'statuses'     => collect(InvoiceStatus::cases())->map(fn (InvoiceStatus $status) => [
+                'value' => $status->value,
+                'label' => $status->label(),
+            ]),
         ]);
     }
 

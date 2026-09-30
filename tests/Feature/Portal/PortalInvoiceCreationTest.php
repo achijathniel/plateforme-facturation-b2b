@@ -250,6 +250,72 @@ final class PortalInvoiceCreationTest extends TestCase
             ->where('invoices.data.0.organization_id', $orgA->id)
             ->where('invoices.data.1.organization_id', $orgA->id)
             ->where('invoices.data.2.organization_id', $orgA->id)
+            ->has('filters')
+            ->has('statuses')
+        );
+    }
+
+    /**
+     * Test 9 : Un comptable peut rechercher une facture par numéro.
+     */
+    public function test_accountant_can_filter_invoices_by_search_term(): void
+    {
+        $org = Organization::factory()->create();
+        $accountant = User::factory()->create([
+            'organization_id' => $org->id,
+            'role'            => UserRole::ACCOUNTANT,
+        ]);
+
+        Invoice::factory()->create([
+            'organization_id' => $org->id,
+            'invoice_number'  => 'INV-TARGET-12345',
+        ]);
+
+        Invoice::factory()->create([
+            'organization_id' => $org->id,
+            'invoice_number'  => 'INV-OTHER-99999',
+        ]);
+
+        $response = $this->actingAs($accountant)->get(route('portal.invoices.index', ['search' => 'TARGET']));
+
+        $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Portal/Invoices/Index')
+            ->has('invoices.data', 1)
+            ->where('invoices.data.0.invoice_number', 'INV-TARGET-12345')
+            ->where('filters.search', 'TARGET')
+        );
+    }
+
+    /**
+     * Test 10 : Un comptable peut filtrer ses factures par statut (ex: DRAFT).
+     */
+    public function test_accountant_can_filter_invoices_by_status(): void
+    {
+        $org = Organization::factory()->create();
+        $accountant = User::factory()->create([
+            'organization_id' => $org->id,
+            'role'            => UserRole::ACCOUNTANT,
+        ]);
+
+        Invoice::factory()->create([
+            'organization_id' => $org->id,
+            'status'          => InvoiceStatus::DRAFT,
+        ]);
+
+        Invoice::factory()->create([
+            'organization_id' => $org->id,
+            'status'          => InvoiceStatus::PAID,
+        ]);
+
+        $response = $this->actingAs($accountant)->get(route('portal.invoices.index', ['status' => 'draft']));
+
+        $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Portal/Invoices/Index')
+            ->has('invoices.data', 1)
+            ->where('invoices.data.0.status', InvoiceStatus::DRAFT->value)
+            ->where('filters.status', 'draft')
         );
     }
 }

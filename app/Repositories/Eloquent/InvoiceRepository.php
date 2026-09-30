@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Eloquent;
 
 use App\DTOs\Admin\AdminInvoiceFilterData;
+use App\DTOs\Portal\PortalInvoiceFilterData;
 use App\Enums\UserRole;
 use App\Models\Invoice;
 use App\Models\User;
@@ -49,16 +50,43 @@ class InvoiceRepository implements InvoiceRepositoryInterface
     /**
      * {@inheritDoc}
      */
-    public function paginateForUser(User $user, int $perPage = 15): LengthAwarePaginator
+    public function paginateForUserWithFilters(User $user, PortalInvoiceFilterData $filter): LengthAwarePaginator
     {
         $query = Invoice::query()->with(['organization', 'items']);
 
-        // Règle Multi-Tenancy : Si l'utilisateur n'est pas Admin, restreindre à son organisation
+        // Règle Multi-Tenancy absolue : Si l'utilisateur n'est pas Admin, restreindre strictement à son organisation
         if ($user->role !== UserRole::ADMIN) {
             $query->where('organization_id', $user->organization_id);
         }
 
-        return $query->latest('issue_date')->paginate($perPage);
+        // Filtre par statut
+        if ($filter->status !== null) {
+            $query->where('status', $filter->status->value);
+        }
+
+        // Recherche par numéro de facture ou notes
+        if ($filter->search !== null && trim($filter->search) !== '') {
+            $term = '%' . strtolower(trim($filter->search)) . '%';
+            $query->where(function ($q) use ($term) {
+                $q->whereRaw('LOWER(invoice_number) LIKE ?', [$term])
+                    ->orWhereRaw('LOWER(notes) LIKE ?', [$term]);
+            });
+        }
+
+        $allowedSorts = ['issue_date', 'due_date', 'total', 'invoice_number', 'status'];
+        $sortBy = in_array($filter->sortBy, $allowedSorts, true) ? $filter->sortBy : 'issue_date';
+        $sortDirection = strtolower($filter->sortDirection) === 'asc' ? 'asc' : 'desc';
+
+        return $query->orderBy($sortBy, $sortDirection)
+            ->paginate($filter->perPage, ['*'], 'page', $filter->page);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function paginateForUser(User $user, int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->paginateForUserWithFilters($user, new PortalInvoiceFilterData(perPage: $perPage));
     }
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Contracts;
 
 use App\DTOs\Admin\AdminInvoiceFilterData;
+use App\DTOs\Portal\PortalInvoiceFilterData;
 use App\Models\Invoice;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -16,6 +17,12 @@ interface InvoiceRepositoryInterface
      * et préchargement de l'organisation pour éliminer les requêtes N+1.
      */
     public function paginateWithFilters(AdminInvoiceFilterData $filter): LengthAwarePaginator;
+
+    /**
+     * Récupère les factures paginées pour un utilisateur (multi-tenancy) avec filtres
+     * et préchargement des relations pour éliminer les requêtes N+1.
+     */
+    public function paginateForUserWithFilters(User $user, PortalInvoiceFilterData $filter): LengthAwarePaginator;
 
     /**
      * Récupère les factures paginées pour un utilisateur (multi-tenancy)
