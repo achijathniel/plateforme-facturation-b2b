@@ -15,6 +15,7 @@ use App\Repositories\Eloquent\PostgresPortalDashboardRepository;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -37,6 +38,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Protection absolue : interdire toute commande destructive (migrate:fresh, db:wipe) sur la base principale
+        DB::prohibitDestructiveCommands(
+            $this->app->isProduction() || config('database.connections.pgsql.database') === 'billing_db'
+        );
+
         // Interdire le Lazy Loading hors production pour stopper immédiatement le problème N+1
         Model::preventLazyLoading(! $this->app->isProduction());
 

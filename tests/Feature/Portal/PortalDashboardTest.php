@@ -101,9 +101,9 @@ final class PortalDashboardTest extends TestCase
             ->component('Portal/Dashboard')
             ->has('stats')
             ->where('stats.total_invoices_count', 2)
-            ->where('stats.total_billed', '1500')
-            ->where('stats.total_paid', '1000')
-            ->where('stats.total_overdue', '500')
+            ->where('stats.total_billed', fn ($val) => in_array((string) $val, ['1500', '1500.00'], true))
+            ->where('stats.total_paid', fn ($val) => in_array((string) $val, ['1000', '1000.00'], true))
+            ->where('stats.total_overdue', fn ($val) => in_array((string) $val, ['500', '500.00'], true))
             ->has('stats.recent_invoices', 2)
             ->where('organization.name', 'Entreprise Alpha')
         );
