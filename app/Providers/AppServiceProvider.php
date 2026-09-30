@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Repositories\Contracts\AdminDashboardRepositoryInterface;
 use App\Repositories\Contracts\InvoiceRepositoryInterface;
 use App\Repositories\Eloquent\InvoiceRepository;
+use App\Repositories\Eloquent\PostgresAdminDashboardRepository;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -19,6 +21,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Liaison de l'interface Repository à son implémentation Eloquent (Inversion de dépendances - SOLID D)
         $this->app->bind(InvoiceRepositoryInterface::class, InvoiceRepository::class);
+        $this->app->bind(AdminDashboardRepositoryInterface::class, PostgresAdminDashboardRepository::class);
     }
 
     /**
@@ -31,6 +34,11 @@ class AppServiceProvider extends ServiceProvider
 
         // Rate limiter anti-brute-force pour l'authentification API (5 tentatives / minute par IP)
         RateLimiter::for('api-login', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip());
+        });
+
+        // Rate limiter anti-brute-force pour l'authentification Web (5 tentatives / minute par IP)
+        RateLimiter::for('web-login', function (Request $request) {
             return Limit::perMinute(5)->by($request->ip());
         });
 

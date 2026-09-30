@@ -87,3 +87,21 @@ Pour toute création ou modification d'endpoints d'API :
    - **Consultation générale (`/api/*`) :** Quotas par utilisateur authentifié (`$request->user()->id`) et par IP pour les invités.
 3. **Application explicite sur les routes :** Attacher systématiquement le middleware `throttle:<nom-de-la-regle>` sur les groupes de routes correspondants dans `routes/api.php`.
 
+## Règle de Développement Frontend (Vite & Assets)
+
+- **Interdiction formelle d'exécuter `npm run build` en cours de développement :** L'utilisateur exécute lui-même `npm run dev` en continu dans son terminal pour bénéficier du rechargement à chaud instantané (HMR).
+- Ne jamais lancer `npm run build` pour appliquer ou vérifier des modifications de composants React ou de fichiers CSS natifs. Le build de production est strictement réservé à la livraison finale du projet.
+
+## Délégation Systématique aux Sous-Agents Spécialisés
+
+- **Règle absolue d'attribution :** Pour toute tâche ou travail demandé par l'utilisateur (analyse, développement frontend React, logique backend Laravel, requêtes base de données, tests, accessibilité, optimisation), attribuer et déléguer systématiquement l'exécution au sous-agent spécialisé correspondant via `invoke_subagent` :
+  - **`react-reviewer` / `react-build-resolver`** : Composants React, hooks, CSS natif, build Vite et ergonomie d'interface.
+  - **`php-reviewer`** : Contrôleurs, services, Form Requests, DTOs et respect des patterns Laravel & SOLID.
+  - **`database-reviewer`** : Schéma PostgreSQL, migrations, index et requêtes SQL complexes.
+  - **`performance-optimizer`** : Métriques, profilage et optimisations des temps de rendu ou requêtes.
+  - **`a11y-architect`** : Accessibilité, contrastes et navigation clavier.
+  - **`e2e-runner`** : Tests fonctionnels et de parcours complets.
+  - **`research`** : Exploration de code ou recherches ciblées.
+  - **`self`** : Tâches d'écriture et d'exécution nécessitant l'outillage complet dans un contexte isolé.
+
+

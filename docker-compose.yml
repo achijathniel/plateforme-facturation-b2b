@@ -6,6 +6,8 @@ services:
     container_name: backend_app
     restart: unless-stopped
     working_dir: /var/www/html
+    ports:
+      - "5173:5173"
     volumes:
       - ./:/var/www/html
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini

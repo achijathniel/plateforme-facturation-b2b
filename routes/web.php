@@ -4,8 +4,25 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\Admin\AdminAuthController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('admin.login');
+});
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::middleware('guest')->group(function () {
+        Route::get('/login', [AdminAuthController::class, 'create'])->name('login');
+        Route::post('/login', [AdminAuthController::class, 'store'])
+            ->middleware('throttle:web-login')
+            ->name('login.store');
+    });
+
+    Route::middleware(['auth', 'admin'])->group(function () {
+        Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('logout');
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    });
 });
 
 Route::get('/api/health', function () {
