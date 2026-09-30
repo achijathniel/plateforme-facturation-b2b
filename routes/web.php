@@ -7,11 +7,21 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminInvoiceController;
+use App\Http\Controllers\Portal\PortalAuthController;
+use App\Http\Controllers\Portal\PortalDashboardController;
 
 Route::get('/', function () {
     return redirect()->route('admin.login');
 });
 
+// Alias direct /admin-dashboard
+Route::get('/admin-dashboard', fn () => redirect()->route('admin.dashboard'));
+
+/*
+|--------------------------------------------------------------------------
+| Espace Administrateur Platform (/admin/*)
+|--------------------------------------------------------------------------
+*/
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('guest')->group(function () {
         Route::get('/login', [AdminAuthController::class, 'create'])->name('login');
@@ -28,6 +38,29 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->name('invoices.index');
     });
 });
+
+/*
+|--------------------------------------------------------------------------
+| Espace Portail Entreprise / Comptable (/portal/* et /portal-dashboard)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('portal')->name('portal.')->group(function () {
+    Route::middleware('guest')->group(function () {
+        Route::get('/login', [PortalAuthController::class, 'create'])->name('login');
+        Route::post('/login', [PortalAuthController::class, 'store'])
+            ->middleware('throttle:web-login')
+            ->name('login.store');
+    });
+
+    Route::middleware(['auth', 'portal'])->group(function () {
+        Route::post('/logout', [PortalAuthController::class, 'destroy'])->name('logout');
+        Route::get('/dashboard', fn () => redirect()->route('portal.dashboard'));
+    });
+});
+
+Route::get('/portal-dashboard', [PortalDashboardController::class, 'index'])
+    ->middleware(['auth', 'portal', 'throttle:web-portal-read'])
+    ->name('portal.dashboard');
 
 Route::get('/api/health', function () {
     try {

@@ -7,9 +7,11 @@ namespace App\Providers;
 use App\Repositories\Contracts\AdminDashboardRepositoryInterface;
 use App\Repositories\Contracts\InvoiceRepositoryInterface;
 use App\Repositories\Contracts\OrganizationRepositoryInterface;
+use App\Repositories\Contracts\PortalDashboardRepositoryInterface;
 use App\Repositories\Eloquent\InvoiceRepository;
 use App\Repositories\Eloquent\OrganizationRepository;
 use App\Repositories\Eloquent\PostgresAdminDashboardRepository;
+use App\Repositories\Eloquent\PostgresPortalDashboardRepository;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -27,6 +29,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(InvoiceRepositoryInterface::class, InvoiceRepository::class);
         $this->app->bind(AdminDashboardRepositoryInterface::class, PostgresAdminDashboardRepository::class);
         $this->app->bind(OrganizationRepositoryInterface::class, OrganizationRepository::class);
+        $this->app->bind(PortalDashboardRepositoryInterface::class, PostgresPortalDashboardRepository::class);
     }
 
     /**
@@ -59,6 +62,11 @@ class AppServiceProvider extends ServiceProvider
 
         // Rate limiter pour la consultation de l'espace d'administration (120 requêtes / minute par administrateur)
         RateLimiter::for('web-admin-read', function (Request $request) {
+            return Limit::perMinute(120)->by($request->user()?->id ?: $request->ip());
+        });
+
+        // Rate limiter pour la consultation du portail entreprise / comptable (120 requêtes / minute)
+        RateLimiter::for('web-portal-read', function (Request $request) {
             return Limit::perMinute(120)->by($request->user()?->id ?: $request->ip());
         });
     }

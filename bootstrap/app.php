@@ -17,10 +17,15 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
 
-        $middleware->redirectGuestsTo(fn () => route('admin.login'));
+        $middleware->redirectGuestsTo(fn (Request $request) => (
+            $request->is('portal*') || $request->is('portal-dashboard*')
+                ? route('portal.login')
+                : route('admin.login')
+        ));
 
         $middleware->alias([
-            'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+            'admin'  => \App\Http\Middleware\EnsureUserIsAdmin::class,
+            'portal' => \App\Http\Middleware\EnsureUserIsPortalUser::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
