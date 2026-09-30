@@ -215,4 +215,42 @@ final class PortalInvoiceCreationTest extends TestCase
 
         $response->assertForbidden();
     }
+
+    /**
+     * Test 8 : Un comptable peut consulter la liste des factures de son organisation.
+     */
+    public function test_accountant_can_view_invoices_list(): void
+    {
+        $orgA = Organization::factory()->create(['name' => 'Acme Corp']);
+        $orgB = Organization::factory()->create(['name' => 'Autre Entreprise Secrète']);
+
+        $accountantA = User::factory()->create([
+            'organization_id' => $orgA->id,
+            'role'            => UserRole::ACCOUNTANT,
+        ]);
+
+        // Factures appartenant à Acme Corp
+        $ownInvoices = Invoice::factory()->count(3)->create([
+            'organization_id' => $orgA->id,
+        ]);
+
+        // Factures d'une autre entreprise (ne doivent absolument pas fuiter)
+        $foreignInvoice = Invoice::factory()->create([
+            'organization_id' => $orgB->id,
+            'invoice_number'  => 'INV-SECRET-FORBIDDEN',
+        ]);
+
+        $response = $this->actingAs($accountantA)->get(route('portal.invoices.index'));
+
+        $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Portal/Invoices/Index')
+            ->where('organization.name', 'Acme Corp')
+            ->has('invoices.data', 3)
+            ->where('invoices.data.0.organization_id', $orgA->id)
+            ->where('invoices.data.1.organization_id', $orgA->id)
+            ->where('invoices.data.2.organization_id', $orgA->id)
+        );
+    }
 }
+

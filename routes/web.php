@@ -65,6 +65,9 @@ Route::prefix('portal')->name('portal.')->group(function () {
         Route::get('/dashboard', fn () => redirect()->route('portal.dashboard'));
 
         // Gestion et émission des factures par le comptable
+        Route::get('/invoices', [PortalInvoiceController::class, 'index'])
+            ->middleware('throttle:web-portal-read')
+            ->name('invoices.index');
         Route::get('/invoices/create', [PortalInvoiceController::class, 'create'])->name('invoices.create');
         Route::post('/invoices', [PortalInvoiceController::class, 'store'])
             ->middleware('throttle:web-invoice-create')

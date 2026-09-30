@@ -19,6 +19,26 @@ use Inertia\Response;
 final class PortalInvoiceController extends Controller
 {
     /**
+     * Affiche la liste des factures appartenant à l'organisation du comptable.
+     */
+    public function index(
+        Request $request,
+        InvoiceRepositoryInterface $invoiceRepository
+    ): Response {
+        Gate::authorize('viewAny', Invoice::class);
+
+        $invoices = $invoiceRepository->paginateForUser($request->user(), 15);
+
+        return Inertia::render('Portal/Invoices/Index', [
+            'invoices'     => $invoices,
+            'organization' => [
+                'id'   => $request->user()->organization?->id,
+                'name' => $request->user()->organization?->name ?? 'Mon Entreprise',
+            ],
+        ]);
+    }
+
+    /**
      * Affiche le formulaire de création d'une nouvelle facture pour le comptable.
      */
     public function create(Request $request): Response
