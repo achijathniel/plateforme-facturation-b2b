@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
 use App\Repositories\Contracts\AdminDashboardRepositoryInterface;
 use App\Repositories\Contracts\InvoiceRepositoryInterface;
+use App\Repositories\Contracts\OrganizationRepositoryInterface;
 use App\Repositories\Eloquent\InvoiceRepository;
+use App\Repositories\Eloquent\OrganizationRepository;
 use App\Repositories\Eloquent\PostgresAdminDashboardRepository;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
@@ -22,6 +26,7 @@ class AppServiceProvider extends ServiceProvider
         // Liaison de l'interface Repository à son implémentation Eloquent (Inversion de dépendances - SOLID D)
         $this->app->bind(InvoiceRepositoryInterface::class, InvoiceRepository::class);
         $this->app->bind(AdminDashboardRepositoryInterface::class, PostgresAdminDashboardRepository::class);
+        $this->app->bind(OrganizationRepositoryInterface::class, OrganizationRepository::class);
     }
 
     /**
@@ -50,6 +55,11 @@ class AppServiceProvider extends ServiceProvider
         // Rate limiter strict pour les mutations financières (15 requêtes / minute par utilisateur)
         RateLimiter::for('api-invoices-write', function (Request $request) {
             return Limit::perMinute(15)->by($request->user()?->id ?: $request->ip());
+        });
+
+        // Rate limiter pour la consultation de l'espace d'administration (120 requêtes / minute par administrateur)
+        RateLimiter::for('web-admin-read', function (Request $request) {
+            return Limit::perMinute(120)->by($request->user()?->id ?: $request->ip());
         });
     }
 }

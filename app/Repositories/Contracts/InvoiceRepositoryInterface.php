@@ -1,13 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\Contracts;
 
+use App\DTOs\Admin\AdminInvoiceFilterData;
 use App\Models\Invoice;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface InvoiceRepositoryInterface
 {
+    /**
+     * Récupère les factures paginées avec filtres avancés (recherche, statut, tri)
+     * et préchargement de l'organisation pour éliminer les requêtes N+1.
+     */
+    public function paginateWithFilters(AdminInvoiceFilterData $filter): LengthAwarePaginator;
+
     /**
      * Récupère les factures paginées pour un utilisateur (multi-tenancy)
      * avec préchargement (Eager Loading) des relations pour éviter le problème N+1.

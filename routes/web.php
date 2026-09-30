@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminInvoiceController;
 
 Route::get('/', function () {
     return redirect()->route('admin.login');
@@ -22,6 +23,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('logout');
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/invoices', [AdminInvoiceController::class, 'index'])
+            ->middleware('throttle:web-admin-read')
+            ->name('invoices.index');
     });
 });
 

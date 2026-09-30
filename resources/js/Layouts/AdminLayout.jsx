@@ -1,8 +1,9 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 
 /**
  * Layout principal pour les vues de l'espace administration.
- * Encapsule la barre supérieure, l'identité de marque, les informations du profil connecté et le bouton de déconnexion.
+ * Encapsule la barre supérieure, la navigation principale, l'identité de marque,
+ * les informations du profil connecté et le bouton de déconnexion.
  *
  * @param {{
  *     auth: { user?: { name: string, role: string } },
@@ -11,6 +12,8 @@ import { Head, Link } from '@inertiajs/react';
  * }} props
  */
 export default function AdminLayout({ auth, title, children }) {
+    const { url } = usePage();
+
     return (
         <>
             {title && <Head title={title} />}
@@ -30,6 +33,24 @@ export default function AdminLayout({ auth, title, children }) {
                                 <p className="admin-brand-subtitle">Espace Administrateur</p>
                             </div>
                         </div>
+
+                        {/* Navigation principale */}
+                        <nav className="admin-nav" aria-label="Navigation principale">
+                            <Link
+                                href="/admin/dashboard"
+                                className={`admin-nav-link ${url === '/admin/dashboard' ? 'active' : ''}`}
+                            >
+                                <span role="img" aria-hidden="true">📊</span>
+                                <span>Tableau de bord</span>
+                            </Link>
+                            <Link
+                                href="/admin/invoices"
+                                className={`admin-nav-link ${url.startsWith('/admin/invoices') ? 'active' : ''}`}
+                            >
+                                <span role="img" aria-hidden="true">📑</span>
+                                <span>Factures</span>
+                            </Link>
+                        </nav>
 
                         {/* Profil connecté & Déconnexion */}
                         <div className="admin-user-controls">

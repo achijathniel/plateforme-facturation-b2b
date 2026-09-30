@@ -104,4 +104,22 @@ Pour toute création ou modification d'endpoints d'API :
   - **`research`** : Exploration de code ou recherches ciblées.
   - **`self`** : Tâches d'écriture et d'exécution nécessitant l'outillage complet dans un contexte isolé.
 
+## Utilisation Prioritaire du MCP GitHub
+
+- Pour toute opération liée au dépôt GitHub (consultation de commits, création de branches, pull requests, issues, synchronisation), privilégier systématiquement l'outillage fourni par le serveur **MCP GitHub** (`call_mcp_tool` avec le serveur `github`).
+
+## Règle Linguistique : Français Obligatoire
+
+- **Langue de communication exclusive :** Toutes les explications, synthèses, analyses, questions, documentations techniques ainsi que les messages de commits (`git commit`) doivent être rédigés en **français**.
+- La terminologie technique peut conserver les termes anglais standards entre parenthèses lorsque pertinent (ex: `chiffre d'affaires (revenue)`, `factures (invoices)`).
+
+## Cycle de Livraison Git : Push Systématique par Jalon Complet
+
+- **Définition d'un jalon complet :** Une partie fonctionnelle est considérée comme achevée uniquement lorsque :
+  1. Le volet **Backend** est implémenté et validé (SOLID, Form Request, DTO, Action, Repository, Rate Limiter).
+  2. Le volet **Frontend** est implémenté et stylisé (Composants React, formulaires, navigation, CSS natif).
+  3. L'ensemble de la suite de tests automatisés est **100% GREEN**.
+- **Action requise :** Dès que ces conditions sont réunies, effectuer systématiquement un commit soigné en français et pousser (`push`) les modifications sur le dépôt distant (`origin/main`).
+
+
 
