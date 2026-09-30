@@ -1,15 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Invoices;
 
 use App\DTOs\Invoices\CreateInvoiceDTO;
 use App\Enums\InvoiceStatus;
-use App\Jobs\SendInvoiceNotificationJob;
 use App\Models\Invoice;
-use App\Models\InvoiceItem;
 use Illuminate\Support\Facades\DB;
 
-class CreateInvoiceAction
+final class CreateInvoiceAction
 {
     /**
      * Taux standard de TVA zone UEMOA (18%).
@@ -18,10 +18,11 @@ class CreateInvoiceAction
 
     /**
      * Exécute la logique métier de création de facture sous transaction atomique.
+     * La facture est créée à l'état de brouillon (DRAFT) sans envoi d'email.
      */
     public function execute(CreateInvoiceDTO $dto): Invoice
     {
-        $invoice = DB::transaction(function () use ($dto) {
+        return DB::transaction(function () use ($dto): Invoice {
             // 1. Calculs financiers stricts avec bcmath
             $subtotal = '0.00';
             $itemsData = [];
@@ -47,7 +48,7 @@ class CreateInvoiceAction
             // 2. Génération du numéro légal séquentiel de la facture
             $year = now()->format('Y');
 
-            // Verrouillage de la dernière facture de l'année pour éviter les accès concurrents (compatible PostgreSQL)
+            // Verrouillage de la dernière facture de l'année pour éviter les accès concurrents
             $lastInvoice = Invoice::withTrashed()
                 ->whereYear('created_at', $year)
                 ->orderByDesc('id')
@@ -61,11 +62,11 @@ class CreateInvoiceAction
 
             $invoiceNumber = sprintf('INV-%s-%05d', $year, $nextSequence);
 
-            // 3. Persistance de la facture
+            // 3. Persistance de la facture au statut DRAFT (brouillon vérifiable)
             $invoice = Invoice::create([
                 'organization_id' => $dto->organizationId,
                 'invoice_number'  => $invoiceNumber,
-                'status'          => InvoiceStatus::SENT,
+                'status'          => InvoiceStatus::DRAFT,
                 'issue_date'      => now()->toDateString(),
                 'due_date'        => $dto->dueDate,
                 'subtotal'        => $subtotal,
@@ -82,10 +83,5 @@ class CreateInvoiceAction
 
             return $invoice->load(['organization', 'items']);
         });
-
-        // 5. Expédition asynchrone du job de notification via Redis
-        SendInvoiceNotificationJob::dispatch($invoice);
-
-        return $invoice;
     }
 }

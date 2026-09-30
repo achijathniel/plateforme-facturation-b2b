@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Invoices;
 
 use App\DTOs\Invoices\CreateInvoiceDTO;
@@ -31,6 +33,7 @@ class StoreInvoiceRequest extends FormRequest
             'items.*.description' => ['required', 'string', 'max:255'],
             'items.*.quantity'    => ['required', 'numeric', 'min:0.01'],
             'items.*.unit_price'  => ['required', 'numeric', 'min:0'],
+            'action'              => ['nullable', 'string', 'in:draft,send'],
         ];
 
         // Seul un Administrateur peut spécifier l'organisation cible (vue globale)

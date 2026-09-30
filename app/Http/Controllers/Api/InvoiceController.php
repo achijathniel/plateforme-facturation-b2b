@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api;
 
 use App\Actions\Invoices\CreateInvoiceAction;
+use App\Actions\Invoices\SendInvoiceAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Invoices\StoreInvoiceRequest;
 use App\Http\Resources\InvoiceResource;
@@ -52,16 +55,39 @@ class InvoiceController extends Controller
     }
 
     /**
-     * Création d'une nouvelle facture via le Service Métier (CreateInvoiceAction).
+     * Création d'une nouvelle facture. Par défaut sur l'API, émet et envoie si send_now est true.
      */
     public function store(
         StoreInvoiceRequest $request,
-        CreateInvoiceAction $createInvoiceAction
+        CreateInvoiceAction $createInvoiceAction,
+        SendInvoiceAction $sendInvoiceAction
     ): JsonResponse {
         $invoice = $createInvoiceAction->execute($request->toDTO());
+
+        if ($request->boolean('send_now', true)) {
+            $invoice = $sendInvoiceAction->execute($invoice);
+        }
 
         return (new InvoiceResource($invoice))
             ->response()
             ->setStatusCode(201);
+    }
+
+    /**
+     * Émission et expédition par email d'un brouillon existant.
+     */
+    public function send(int $id, SendInvoiceAction $sendInvoiceAction): InvoiceResource
+    {
+        $invoice = $this->invoiceRepository->findById($id);
+
+        if (! $invoice) {
+            abort(404, 'Facture introuvable.');
+        }
+
+        Gate::authorize('update', $invoice);
+
+        $sentInvoice = $sendInvoiceAction->execute($invoice);
+
+        return new InvoiceResource($sentInvoice);
     }
 }

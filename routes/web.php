@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminInvoiceController;
 use App\Http\Controllers\Portal\PortalAuthController;
 use App\Http\Controllers\Portal\PortalDashboardController;
+use App\Http\Controllers\Portal\PortalInvoiceController;
 
 Route::get('/', function () {
     if (auth()->check()) {
@@ -62,6 +63,15 @@ Route::prefix('portal')->name('portal.')->group(function () {
     Route::middleware(['auth', 'portal'])->group(function () {
         Route::post('/logout', [PortalAuthController::class, 'destroy'])->name('logout');
         Route::get('/dashboard', fn () => redirect()->route('portal.dashboard'));
+
+        // Gestion et émission des factures par le comptable
+        Route::get('/invoices/create', [PortalInvoiceController::class, 'create'])->name('invoices.create');
+        Route::post('/invoices', [PortalInvoiceController::class, 'store'])
+            ->middleware('throttle:web-invoice-create')
+            ->name('invoices.store');
+        Route::post('/invoices/{id}/send', [PortalInvoiceController::class, 'send'])
+            ->middleware('throttle:web-invoice-create')
+            ->name('invoices.send');
     });
 });
 

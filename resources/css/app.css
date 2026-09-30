@@ -1203,5 +1203,379 @@ input, button {
     width: 100%;
 }
 
+/* ==========================================================================
+   9. FORMULAIRE DE CRÉATION DE FACTURE (PORTAIL COMPTABLE)
+   ========================================================================== */
+
+.invoice-create-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.breadcrumb-nav {
+    margin-bottom: 8px;
+}
+
+.breadcrumb-link {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--blue-primary);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.breadcrumb-link:hover {
+    color: var(--blue-hover);
+    text-decoration: underline;
+}
+
+.portal-page-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.portal-page-subtitle {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.invoice-create-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.form-section-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+}
+
+.section-header-flex {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.section-description {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.form-label.required::after {
+    content: " *";
+    color: var(--rose-text);
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 13px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    transition: var(--transition);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--blue-primary);
+    box-shadow: 0 0 0 3px var(--blue-ring);
+}
+
+.form-input.input-error {
+    border-color: var(--rose-border);
+    background-color: #fff1f2;
+}
+
+.field-error-text {
+    font-size: 12px;
+    color: var(--rose-text);
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+.form-alert.error {
+    background-color: var(--rose-bg);
+    color: var(--rose-text);
+    border: 1px solid var(--rose-border);
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.btn-add-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background-color: var(--blue-bg-light);
+    color: var(--blue-primary);
+    font-size: 13px;
+    font-weight: 700;
+    border: 1px solid var(--blue-border-subtle);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-add-line:hover {
+    background-color: #dbeafe;
+    border-color: var(--blue-border);
+}
+
+/* Tableau d'articles dynamique */
+.invoice-items-form-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 13px;
+}
+
+.invoice-items-form-table th {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-secondary);
+    font-weight: 600;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.invoice-items-form-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--border-light);
+    vertical-align: top;
+}
+
+.table-input {
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+.cell-line-total {
+    padding-top: 18px !important;
+    font-size: 14px;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.cell-action {
+    padding-top: 14px !important;
+    text-align: center;
+}
+
+.btn-delete-row {
+    background: transparent;
+    border: 1px solid var(--border-light);
+    color: var(--rose-text);
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.btn-delete-row:hover {
+    background-color: var(--rose-bg);
+    border-color: var(--rose-border);
+}
+
+/* Grille inférieure (Explication cycle & Récapitulatif) */
+.invoice-bottom-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .invoice-bottom-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.invoice-explanation-card {
+    background-color: #f8fafc;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.explanation-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.explanation-text {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.invoice-financial-summary-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.summary-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 12px;
+    margin: 0;
+}
+
+.summary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.summary-row.total-highlight {
+    border-top: 2px dashed var(--border-light);
+    padding-top: 14px;
+    margin-top: 4px;
+}
+
+.summary-value {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.total-price {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--blue-primary);
+}
+
+.summary-actions-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.btn-save-draft {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 18px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    background-color: #f1f5f9;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-save-draft:hover:not(:disabled) {
+    background-color: #e2e8f0;
+    border-color: #cbd5e1;
+}
+
+.btn-save-draft:disabled,
+.btn-emit-send:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-emit-send {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 18px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+    background-color: var(--blue-primary);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.25);
+}
+
+.btn-save-draft:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--blue-ring);
+}
+
+.btn-emit-send:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--blue-ring);
+}
+
+.btn-emit-send:hover:not(:disabled) {
+    background-color: var(--blue-hover);
+    box-shadow: 0 3px 6px rgba(37, 99, 235, 0.35);
+}
+
 
 
