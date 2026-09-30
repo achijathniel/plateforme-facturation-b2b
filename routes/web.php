@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Route;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminInvoiceController;
@@ -11,7 +12,13 @@ use App\Http\Controllers\Portal\PortalAuthController;
 use App\Http\Controllers\Portal\PortalDashboardController;
 
 Route::get('/', function () {
-    return redirect()->route('admin.login');
+    if (auth()->check()) {
+        return auth()->user()->role === UserRole::ADMIN
+            ? redirect()->route('admin.dashboard')
+            : redirect()->route('portal.dashboard');
+    }
+
+    return redirect()->route('portal.login');
 });
 
 // Alias direct /admin-dashboard
