@@ -225,7 +225,22 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
                                 </tr>
                             ) : (
                                 invoiceList.map((invoice) => (
-                                    <tr key={invoice.id}>
+                                    <tr
+                                        key={invoice.id}
+                                        className="clickable-row"
+                                        onClick={(e) => {
+                                            const selection = window.getSelection();
+                                            if (selection && selection.toString().length > 0) {
+                                                return;
+                                            }
+
+                                            if (e.target.closest('a') || e.target.closest('button')) {
+                                                return;
+                                            }
+
+                                            router.visit(`/portal/invoices/${invoice.id}`);
+                                        }}
+                                    >
                                         <td>
                                             <Link
                                                 href={`/portal/invoices/${invoice.id}`}

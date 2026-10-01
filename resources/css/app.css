@@ -1842,10 +1842,11 @@ input, button {
 /* Ligne cliquable dans les tableaux */
 .clickable-row {
     cursor: pointer;
-    transition: var(--transition);
+    transition: background-color 0.15s ease-in-out;
 }
 
-.clickable-row:hover {
+.clickable-row:hover,
+.clickable-row:focus-within {
     background-color: var(--blue-subtle) !important;
 }
 

@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import PortalLayout from '../../Layouts/PortalLayout';
 import MetricCard from '../../Components/MetricCard';
 import StatusBadge from '../../Components/StatusBadge';
@@ -106,7 +106,24 @@ export default function Dashboard({ auth, organization, stats }) {
                         <tbody>
                             {stats?.recent_invoices && stats.recent_invoices.length > 0 ? (
                                 stats.recent_invoices.map((invoice) => (
-                                    <tr key={invoice.id || invoice.invoice_number}>
+                                    <tr
+                                        key={invoice.id || invoice.invoice_number}
+                                        className="clickable-row"
+                                        onClick={(e) => {
+                                            const selection = window.getSelection();
+                                            if (selection && selection.toString().length > 0) {
+                                                return;
+                                            }
+
+                                            if (e.target.closest('a') || e.target.closest('button')) {
+                                                return;
+                                            }
+
+                                            if (invoice.id) {
+                                                router.visit(`/portal/invoices/${invoice.id}`);
+                                            }
+                                        }}
+                                    >
                                         <td>
                                             <Link
                                                 href={`/portal/invoices/${invoice.id}`}
