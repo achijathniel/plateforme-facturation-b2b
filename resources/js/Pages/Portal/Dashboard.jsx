@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import PortalLayout from '../../Layouts/PortalLayout';
 import MetricCard from '../../Components/MetricCard';
 import StatusBadge from '../../Components/StatusBadge';
@@ -107,9 +108,13 @@ export default function Dashboard({ auth, organization, stats }) {
                                 stats.recent_invoices.map((invoice) => (
                                     <tr key={invoice.id || invoice.invoice_number}>
                                         <td>
-                                            <span className="table-code">
+                                            <Link
+                                                href={`/portal/invoices/${invoice.id}`}
+                                                className="link-invoice-num"
+                                                title={`Consulter la facture ${invoice.invoice_number}`}
+                                            >
                                                 {invoice.invoice_number}
-                                            </span>
+                                            </Link>
                                         </td>
                                         <td>{invoice.issue_date}</td>
                                         <td>{invoice.due_date}</td>

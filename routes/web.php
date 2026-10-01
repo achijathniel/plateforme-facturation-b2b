@@ -72,6 +72,15 @@ Route::prefix('portal')->name('portal.')->group(function () {
         Route::post('/invoices', [PortalInvoiceController::class, 'store'])
             ->middleware('throttle:web-invoice-create')
             ->name('invoices.store');
+        Route::get('/invoices/{id}', [PortalInvoiceController::class, 'show'])
+            ->middleware('throttle:web-portal-read')
+            ->name('invoices.show');
+        Route::get('/invoices/{id}/edit', [PortalInvoiceController::class, 'edit'])
+            ->middleware('throttle:web-portal-read')
+            ->name('invoices.edit');
+        Route::put('/invoices/{id}', [PortalInvoiceController::class, 'update'])
+            ->middleware('throttle:web-invoice-create')
+            ->name('invoices.update');
         Route::post('/invoices/{id}/send', [PortalInvoiceController::class, 'send'])
             ->middleware('throttle:web-invoice-create')
             ->name('invoices.send');

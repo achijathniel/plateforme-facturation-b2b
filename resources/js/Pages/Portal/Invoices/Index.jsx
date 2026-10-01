@@ -121,6 +121,7 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
                             <span className="search-icon" aria-hidden="true">🔍</span>
                             <input
                                 type="search"
+                                name="search"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Rechercher par n° de facture..."
@@ -139,6 +140,7 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
                         </label>
                         <select
                             id="status-select"
+                            name="status"
                             value={status}
                             onChange={handleStatusChange}
                             className="filter-select"
@@ -187,12 +189,13 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
                                 <th scope="col">Échéance</th>
                                 <th scope="col">Montant Total</th>
                                 <th scope="col">Statut</th>
+                                <th scope="col" style={{ textAlign: 'right' }}>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {invoiceList.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" className="table-empty-cell">
+                                    <td colSpan="6" className="table-empty-cell">
                                         <div className="table-empty-state">
                                             <span className="empty-state-icon" aria-hidden="true">
                                                 {hasActiveFilters ? '🔍' : '📑'}
@@ -224,7 +227,13 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
                                 invoiceList.map((invoice) => (
                                     <tr key={invoice.id}>
                                         <td>
-                                            <span className="table-code">{invoice.invoice_number}</span>
+                                            <Link
+                                                href={`/portal/invoices/${invoice.id}`}
+                                                className="link-invoice-num"
+                                                title={`Consulter la facture ${invoice.invoice_number}`}
+                                            >
+                                                {invoice.invoice_number}
+                                            </Link>
                                         </td>
                                         <td>
                                             {invoice.issue_date
@@ -243,6 +252,16 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
                                         </td>
                                         <td>
                                             <StatusBadge status={invoice.status} />
+                                        </td>
+                                        <td style={{ textAlign: 'right' }}>
+                                            <Link
+                                                href={`/portal/invoices/${invoice.id}`}
+                                                className="btn-table-action-view"
+                                                aria-label={`Consulter la facture ${invoice.invoice_number}`}
+                                            >
+                                                <span aria-hidden="true">👁️</span>
+                                                <span>Consulter</span>
+                                            </Link>
                                         </td>
                                     </tr>
                                 ))

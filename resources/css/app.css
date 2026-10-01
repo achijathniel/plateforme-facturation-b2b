@@ -1601,5 +1601,340 @@ input, button {
     background: #2563eb !important;
 }
 
+/* ==========================================================================
+   11. Document Facture (Show & Print) & Édition (Edit)
+   ========================================================================== */
+.invoice-view-container {
+    max-width: 960px;
+    margin: 0 auto 40px auto;
+}
+
+/* Barre d'actions supérieure */
+.invoice-actions-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.invoice-actions-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-print-invoice {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background-color: #ffffff;
+    color: var(--text-primary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-print-invoice:hover {
+    border-color: var(--blue-primary);
+    color: var(--blue-primary);
+    background-color: var(--blue-subtle);
+}
+
+.btn-edit-invoice {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background-color: #ffffff;
+    color: var(--blue-primary);
+    border: 1px solid var(--blue-border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-edit-invoice:hover {
+    background-color: var(--blue-subtle);
+}
+
+.btn-send-invoice {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background-color: var(--blue-primary);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-send-invoice:hover:not(:disabled) {
+    background-color: var(--blue-hover);
+}
+
+/* Document Facture Paper-Style */
+.invoice-document-card {
+    background-color: #ffffff;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: 40px;
+}
+
+.invoice-doc-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--blue-subtle);
+    padding-bottom: 24px;
+    margin-bottom: 28px;
+}
+
+.invoice-doc-brand h2 {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+}
+
+.invoice-doc-brand p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.invoice-doc-meta {
+    text-align: right;
+}
+
+.invoice-doc-number {
+    font-size: 20px;
+    font-weight: 800;
+    font-family: monospace;
+    color: var(--blue-primary);
+    margin: 0 0 6px 0;
+}
+
+.invoice-doc-dates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    padding: 16px 20px;
+    margin-bottom: 32px;
+}
+
+.doc-date-item span {
+    display: block;
+}
+
+.doc-date-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+.doc-date-val {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Tableau d'articles du document */
+.invoice-doc-table-wrapper {
+    margin-bottom: 32px;
+    overflow-x: auto;
+}
+
+.invoice-doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+}
+
+.invoice-doc-table th {
+    background-color: var(--bg-main);
+    color: var(--text-secondary);
+    text-align: left;
+    padding: 12px 14px;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--border-light);
+}
+
+.invoice-doc-table td {
+    padding: 14px;
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text-primary);
+}
+
+.invoice-doc-table td.text-right,
+.invoice-doc-table th.text-right {
+    text-align: right;
+}
+
+/* Bloc Totaux */
+.invoice-doc-totals-section {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 32px;
+}
+
+.invoice-doc-totals-box {
+    width: 320px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    background-color: #ffffff;
+    overflow: hidden;
+}
+
+.invoice-totals-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 16px;
+    font-size: 13.5px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.invoice-totals-line.highlight {
+    background-color: var(--blue-subtle);
+    border-bottom: none;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--blue-primary);
+    padding: 14px 16px;
+}
+
+/* Notes & Mentions */
+.invoice-doc-notes {
+    border-top: 1px solid var(--border-light);
+    padding-top: 20px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.invoice-doc-notes h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 6px 0;
+}
+
+/* Ligne cliquable dans les tableaux */
+.clickable-row {
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.clickable-row:hover {
+    background-color: var(--blue-subtle) !important;
+}
+
+.link-invoice-num {
+    color: var(--blue-primary);
+    font-weight: 700;
+    font-family: monospace;
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.link-invoice-num:hover {
+    text-decoration: underline;
+}
+
+.btn-table-action-view {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background-color: #ffffff;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.btn-table-action-view:hover {
+    background-color: var(--blue-subtle);
+    border-color: var(--blue-border);
+    color: var(--blue-primary);
+}
+
+/* ==========================================================================
+   Feuille de style d'impression (@media print)
+   ========================================================================== */
+@media print {
+    /* Masquer tous les composants d'interface web superflus */
+    .admin-header,
+    .portal-sidebar,
+    .portal-header-top,
+    .invoice-actions-bar,
+    .breadcrumb-nav,
+    .btn-action-new-invoice,
+    .filter-card,
+    .pagination,
+    .dealtoo-toast-popup,
+    .portal-sidebar-toggle {
+        display: none !important;
+    }
+
+    body, .portal-app, .portal-main, .portal-content-body, .invoice-view-container {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-shadow: none !important;
+    }
+
+    .invoice-document-card {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .invoice-doc-table th {
+        background-color: #f1f5f9 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .invoice-totals-line.highlight {
+        background-color: #eff6ff !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    @page {
+        size: A4 portrait;
+        margin: 15mm;
+    }
+}
+
 
 
