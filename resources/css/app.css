@@ -23,6 +23,7 @@
     --blue-border: #93c5fd;
     --blue-border-subtle: #bfdbfe;
     --blue-bg-light: #eff6ff;
+    --blue-subtle: #eff6ff;
     --blue-ring: rgba(37, 99, 235, 0.18);
 
     /* Statuts */
@@ -1847,7 +1848,7 @@ input, button {
 
 .clickable-row:hover,
 .clickable-row:focus-within {
-    background-color: var(--blue-subtle) !important;
+    background-color: var(--bg-surface-hover, #f1f5f9) !important;
 }
 
 .link-invoice-num {
