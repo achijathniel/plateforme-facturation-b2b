@@ -47,10 +47,11 @@ class SendInvoiceNotificationJob implements ShouldQueue
         // S'assurer que les relations nécessaires sont chargées
         $this->invoice->loadMissing(['organization', 'items']);
 
-        $recipientEmail = $this->invoice->organization?->email;
+        // Expédition prioritaire vers l'email de l'entreprise cliente destinataire
+        $recipientEmail = $this->invoice->client_email ?? $this->invoice->organization?->email;
 
         if (! $recipientEmail) {
-            Log::warning("Envoi facture annulé : aucun email trouvé pour l'organisation ID {$this->invoice->organization_id}.");
+            Log::warning("Envoi facture annulé : aucun email destinataire trouvé pour la facture {$this->invoice->invoice_number}.");
             return;
         }
 

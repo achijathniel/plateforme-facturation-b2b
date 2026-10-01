@@ -64,16 +64,21 @@ final class CreateInvoiceAction
 
             // 3. Persistance de la facture au statut DRAFT (brouillon vérifiable)
             $invoice = Invoice::create([
-                'organization_id' => $dto->organizationId,
-                'invoice_number'  => $invoiceNumber,
-                'status'          => InvoiceStatus::DRAFT,
-                'issue_date'      => now()->toDateString(),
-                'due_date'        => $dto->dueDate,
-                'subtotal'        => $subtotal,
-                'tax_amount'      => $taxAmount,
-                'total'           => $total,
-                'currency'        => 'XOF',
-                'notes'           => $dto->notes,
+                'organization_id'   => $dto->organizationId,
+                'invoice_number'    => $invoiceNumber,
+                'client_name'       => $dto->clientName,
+                'client_email'      => $dto->clientEmail,
+                'client_address'    => $dto->clientAddress,
+                'client_tax_number' => $dto->clientTaxNumber,
+                'client_phone'      => $dto->clientPhone,
+                'status'            => InvoiceStatus::DRAFT,
+                'issue_date'        => now()->toDateString(),
+                'due_date'          => $dto->dueDate,
+                'subtotal'          => $subtotal,
+                'tax_amount'        => $taxAmount,
+                'total'             => $total,
+                'currency'          => 'XOF',
+                'notes'             => $dto->notes,
             ]);
 
             // 4. Persistance des lignes d'articles

@@ -26,6 +26,11 @@ final class UpdateInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'client_name'         => ['required', 'string', 'max:255'],
+            'client_email'        => ['required', 'email', 'max:255'],
+            'client_address'      => ['nullable', 'string', 'max:500'],
+            'client_tax_number'   => ['nullable', 'string', 'max:50'],
+            'client_phone'        => ['nullable', 'string', 'max:30'],
             'due_date'            => ['required', 'date'],
             'notes'               => ['nullable', 'string', 'max:1000'],
             'items'               => ['required', 'array', 'min:1'],
@@ -44,14 +49,17 @@ final class UpdateInvoiceRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'due_date.required'            => 'La date d\'échéance est obligatoire.',
-            'items.required'               => 'La facture doit comporter au moins une ligne d\'article.',
-            'items.min'                    => 'La facture doit comporter au moins une ligne d\'article.',
-            'items.*.description.required' => 'La description de chaque ligne est obligatoire.',
-            'items.*.quantity.required'    => 'La quantité est obligatoire.',
-            'items.*.quantity.min'         => 'La quantité doit être supérieure à 0.',
-            'items.*.unit_price.required'  => 'Le prix unitaire est obligatoire.',
-            'items.*.unit_price.min'       => 'Le prix unitaire ne peut pas être négatif.',
+            'client_name.required'        => 'Le nom de l\'entreprise cliente est obligatoire.',
+            'client_email.required'       => 'L\'adresse email de l\'entreprise cliente est obligatoire.',
+            'client_email.email'          => 'L\'adresse email du client doit être une adresse valide.',
+            'due_date.required'           => 'La date d\'échéance est obligatoire.',
+            'items.required'              => 'La facture doit comporter au moins une ligne d\'article.',
+            'items.min'                   => 'La facture doit comporter au moins une ligne d\'article.',
+            'items.*.description.required'=> 'La description de chaque ligne est obligatoire.',
+            'items.*.quantity.required'   => 'La quantité est obligatoire.',
+            'items.*.quantity.min'        => 'La quantité doit être supérieure à 0.',
+            'items.*.unit_price.required' => 'Le prix unitaire est obligatoire.',
+            'items.*.unit_price.min'      => 'Le prix unitaire ne peut pas être négatif.',
         ];
     }
 
@@ -64,6 +72,11 @@ final class UpdateInvoiceRequest extends FormRequest
         $items = $this->validated('items');
 
         return UpdateInvoiceDTO::fromRequest(
+            clientName: (string) $this->validated('client_name'),
+            clientEmail: (string) $this->validated('client_email'),
+            clientAddress: is_string($this->validated('client_address')) ? $this->validated('client_address') : null,
+            clientTaxNumber: is_string($this->validated('client_tax_number')) ? $this->validated('client_tax_number') : null,
+            clientPhone: is_string($this->validated('client_phone')) ? $this->validated('client_phone') : null,
             dueDate: (string) $this->validated('due_date'),
             notes: is_string($notes) ? $notes : null,
             items: is_array($items) ? $items : [],

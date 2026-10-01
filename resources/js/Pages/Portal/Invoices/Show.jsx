@@ -151,6 +151,40 @@ export default function Show({ auth, organization, invoice }) {
                         </div>
                     </header>
 
+                    {/* Parties Émetteur & Destinataire B2B */}
+                    <section className="invoice-doc-parties-grid" aria-label="Émetteur et Destinataire">
+                        <div className="party-block">
+                            <span className="party-type-label">Émetteur / Fournisseur</span>
+                            <h3 className="party-name">{organization?.name || 'Entreprise B2B'}</h3>
+                            <p className="party-detail">Plateforme de Facturation & Comptabilité B2B</p>
+                        </div>
+
+                        <div className="party-block">
+                            <span className="party-type-label">Destinataire / Facturé à</span>
+                            <h3 className="party-name">{invoice.client_name || 'Client Entreprise'}</h3>
+                            {invoice.client_email && (
+                                <p className="party-detail">
+                                    <strong>Email :</strong> {invoice.client_email}
+                                </p>
+                            )}
+                            {invoice.client_tax_number && (
+                                <p className="party-detail">
+                                    <strong>NIF / N° Fiscal :</strong> {invoice.client_tax_number}
+                                </p>
+                            )}
+                            {invoice.client_phone && (
+                                <p className="party-detail">
+                                    <strong>Tél :</strong> {invoice.client_phone}
+                                </p>
+                            )}
+                            {invoice.client_address && (
+                                <p className="party-detail">
+                                    <strong>Adresse :</strong> {invoice.client_address}
+                                </p>
+                            )}
+                        </div>
+                    </section>
+
                     {/* Grille des dates & métadonnées */}
                     <section className="invoice-doc-dates-grid" aria-label="Dates et informations générales">
                         <div className="doc-date-item">

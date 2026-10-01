@@ -10,6 +10,11 @@ final readonly class UpdateInvoiceDTO
      * @param  array<CreateInvoiceItemDTO>  $items
      */
     public function __construct(
+        public string $clientName,
+        public string $clientEmail,
+        public ?string $clientAddress,
+        public ?string $clientTaxNumber,
+        public ?string $clientPhone,
         public string $dueDate,
         public ?string $notes,
         public array $items,
@@ -22,6 +27,11 @@ final readonly class UpdateInvoiceDTO
      * @param  array<int, array{description: string, quantity: numeric, unit_price: numeric}>  $items
      */
     public static function fromRequest(
+        string $clientName,
+        string $clientEmail,
+        ?string $clientAddress,
+        ?string $clientTaxNumber,
+        ?string $clientPhone,
         string $dueDate,
         ?string $notes,
         array $items,
@@ -33,6 +43,11 @@ final readonly class UpdateInvoiceDTO
         );
 
         return new self(
+            clientName: trim($clientName),
+            clientEmail: trim($clientEmail),
+            clientAddress: $clientAddress ? trim($clientAddress) : null,
+            clientTaxNumber: $clientTaxNumber ? trim($clientTaxNumber) : null,
+            clientPhone: $clientPhone ? trim($clientPhone) : null,
             dueDate: $dueDate,
             notes: $notes,
             items: $itemDTOs,

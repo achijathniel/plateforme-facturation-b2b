@@ -25,9 +25,14 @@ class InvoiceFactory extends Factory
         $dueDate = (clone $issueDate)->modify('+30 days');
 
         return [
-            'organization_id' => Organization::factory(),
-            'invoice_number'  => 'INV-' . fake()->unique()->numerify('2026-#####'),
-            'status'          => fake()->randomElement([
+            'organization_id'   => Organization::factory(),
+            'invoice_number'    => 'INV-' . fake()->unique()->numerify('2026-#####'),
+            'client_name'       => fake()->company(),
+            'client_email'      => fake()->companyEmail(),
+            'client_address'    => fake()->address(),
+            'client_tax_number' => 'CI-ABJ-' . fake()->numerify('####-B-#####'),
+            'client_phone'      => fake()->phoneNumber(),
+            'status'            => fake()->randomElement([
                 InvoiceStatus::DRAFT,
                 InvoiceStatus::SENT,
                 InvoiceStatus::PAID,

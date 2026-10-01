@@ -45,11 +45,16 @@ final class UpdateInvoiceAction
             $total = bcadd($subtotal, $taxAmount, 2);
 
             $updatePayload = [
-                'due_date'   => $dto->dueDate,
-                'subtotal'   => $subtotal,
-                'tax_amount' => $taxAmount,
-                'total'      => $total,
-                'notes'      => $dto->notes,
+                'client_name'       => $dto->clientName,
+                'client_email'      => $dto->clientEmail,
+                'client_address'    => $dto->clientAddress,
+                'client_tax_number' => $dto->clientTaxNumber,
+                'client_phone'      => $dto->clientPhone,
+                'due_date'          => $dto->dueDate,
+                'subtotal'          => $subtotal,
+                'tax_amount'        => $taxAmount,
+                'total'             => $total,
+                'notes'             => $dto->notes,
             ];
 
             $shouldSend = $dto->action === 'send';

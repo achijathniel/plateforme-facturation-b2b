@@ -1,13 +1,14 @@
 import { useMemo } from 'react';
 import { useForm, Link } from '@inertiajs/react';
+import Swal from 'sweetalert2';
 import PortalLayout from '../../../Layouts/PortalLayout';
 import { formatCurrency } from '../../../Utils/formatters';
 
 /**
  * Page de création d'une nouvelle facture dans l'espace portail comptable.
- * Permet au comptable de saisir les informations, ajouter dynamiquement
- * des lignes d'articles, visualiser les totaux en temps réel,
- * et choisir entre "Enregistrer en brouillon" ou "Émettre et envoyer".
+ * Permet au comptable de renseigner les informations de l'entreprise cliente,
+ * les modalités d'échéance, les lignes de facturation détaillées,
+ * et de choisir d'enregistrer en brouillon ou d'émettre et envoyer au client.
  *
  * @param {{
  *     auth: { user: { name: string, role: string, organization?: { id: number, name: string } } },
@@ -24,6 +25,11 @@ const createEmptyItem = () => ({
 
 export default function Create({ auth, organization, defaultDueDate }) {
     const { data, setData, post, processing, errors, transform } = useForm({
+        client_name: '',
+        client_email: '',
+        client_address: '',
+        client_tax_number: '',
+        client_phone: '',
         due_date: defaultDueDate || '',
         notes: '',
         action: 'draft',
@@ -33,9 +39,17 @@ export default function Create({ auth, organization, defaultDueDate }) {
     // Gestion dynamique des lignes de facturation
     const handleItemChange = (index, field, value) => {
         const updatedItems = [...data.items];
+
+        let sanitizedValue = value;
+        if (field === 'unit_price' || field === 'quantity') {
+            sanitizedValue = typeof value === 'string'
+                ? value.replace(/\s+/g, '').replace(',', '.')
+                : value;
+        }
+
         updatedItems[index] = {
             ...updatedItems[index],
-            [field]: value,
+            [field]: sanitizedValue,
         };
         setData('items', updatedItems);
     };
@@ -50,7 +64,7 @@ export default function Create({ auth, organization, defaultDueDate }) {
         setData('items', updatedItems);
     };
 
-    // Calculs financiers réactifs en temps réel (Hors Taxes, TVA 18%, Toutes Taxes Comprises)
+    // Calculs financiers réactifs en temps réel (HT, TVA 18%, TTC)
     const financials = useMemo(() => {
         let subtotal = 0;
         data.items.forEach((item) => {
@@ -61,27 +75,52 @@ export default function Create({ auth, organization, defaultDueDate }) {
             }
         });
 
-        // Taux standard TVA : 18%
         const taxAmount = Math.round(subtotal * 0.18 * 100) / 100;
         const total = Math.round((subtotal + taxAmount) * 100) / 100;
 
         return { subtotal, taxAmount, total };
     }, [data.items]);
 
-    // Soumission du formulaire selon l'action choisie
-    const handleSubmit = (actionType) => {
+    // Soumission du formulaire
+    const executeSubmit = (actionType) => {
         transform((currentData) => ({
             ...currentData,
             action: actionType,
-            items: currentData.items.map(({ id, ...item }) => item),
+            items: currentData.items.map(({ id, ...item }) => ({
+                ...item,
+                quantity: parseFloat(item.quantity) || 0,
+                unit_price: parseFloat(item.unit_price) || 0,
+            })),
         }));
         post('/portal/invoices');
+    };
+
+    const handleSubmit = (actionType) => {
+        if (actionType === 'send') {
+            Swal.fire({
+                title: 'Émettre et envoyer la facture au client ?',
+                text: `La facture sera immédiatement transmise par notification email à ${data.client_email || "l'adresse du client"}.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Oui, émettre et envoyer',
+                cancelButtonText: 'Annuler',
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                reverseButtons: true,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    executeSubmit('send');
+                }
+            });
+        } else {
+            executeSubmit('draft');
+        }
     };
 
     return (
         <PortalLayout auth={auth} organization={organization} title="Créer une nouvelle facture">
             <div className="invoice-create-container">
-                {/* En-tête de la page avec bouton retour */}
+                {/* En-tête de la page */}
                 <div className="page-header-row">
                     <div>
                         <div className="breadcrumb-nav">
@@ -99,13 +138,140 @@ export default function Create({ auth, organization, defaultDueDate }) {
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
+                        handleSubmit('draft');
                     }}
-                    className="invoice-create-form"
+                    className="invoice-form"
                     noValidate
                 >
-                    {/* 1. Informations générales */}
+                    {/* Alerte générale si erreurs de validation */}
+                    {Object.keys(errors).length > 0 && (
+                        <div className="form-alert error" role="alert">
+                            <strong>Erreurs de validation :</strong> Veuillez vérifier les informations
+                            saisies dans le formulaire ci-dessous.
+                        </div>
+                    )}
+
+                    {/* Section 1 : Entreprise Cliente (Destinataire B2B) */}
                     <div className="form-section-card">
-                        <h3 className="section-title">1. Informations générales</h3>
+                        <div className="section-header-flex">
+                            <div>
+                                <h3 className="section-title">1. Entreprise Cliente (Destinataire B2B)</h3>
+                                <p className="section-description">
+                                    Renseignez les coordonnées de l'entreprise à laquelle cette facture est adressée.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label htmlFor="client_name" className="form-label required">
+                                    Nom / Raison sociale de l'entreprise cliente
+                                </label>
+                                <input
+                                    id="client_name"
+                                    name="client_name"
+                                    type="text"
+                                    placeholder="Ex: Société Ivoirienne de Négoce (SIN)"
+                                    className={`form-input ${errors.client_name ? 'input-error' : ''}`}
+                                    value={data.client_name}
+                                    onChange={(e) => setData('client_name', e.target.value)}
+                                    required
+                                />
+                                {errors.client_name && (
+                                    <span className="field-error-text" role="alert">
+                                        {errors.client_name}
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="client_email" className="form-label required">
+                                    Email de facturation du client (Destinataire)
+                                </label>
+                                <input
+                                    id="client_email"
+                                    name="client_email"
+                                    type="email"
+                                    placeholder="Ex: facturation@client-negoce.ci"
+                                    className={`form-input ${errors.client_email ? 'input-error' : ''}`}
+                                    value={data.client_email}
+                                    onChange={(e) => setData('client_email', e.target.value)}
+                                    required
+                                />
+                                {errors.client_email && (
+                                    <span className="field-error-text" role="alert">
+                                        {errors.client_email}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="form-row" style={{ marginTop: '16px' }}>
+                            <div className="form-group">
+                                <label htmlFor="client_tax_number" className="form-label">
+                                    NIF / N° Registre de Commerce (facultatif)
+                                </label>
+                                <input
+                                    id="client_tax_number"
+                                    name="client_tax_number"
+                                    type="text"
+                                    placeholder="Ex: CI-ABJ-2023-B-12345"
+                                    className={`form-input ${errors.client_tax_number ? 'input-error' : ''}`}
+                                    value={data.client_tax_number}
+                                    onChange={(e) => setData('client_tax_number', e.target.value)}
+                                />
+                                {errors.client_tax_number && (
+                                    <span className="field-error-text" role="alert">
+                                        {errors.client_tax_number}
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="client_phone" className="form-label">
+                                    Téléphone de contact (facultatif)
+                                </label>
+                                <input
+                                    id="client_phone"
+                                    name="client_phone"
+                                    type="tel"
+                                    placeholder="Ex: +225 07 00 00 00 00"
+                                    className={`form-input ${errors.client_phone ? 'input-error' : ''}`}
+                                    value={data.client_phone}
+                                    onChange={(e) => setData('client_phone', e.target.value)}
+                                />
+                                {errors.client_phone && (
+                                    <span className="field-error-text" role="alert">
+                                        {errors.client_phone}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="form-group" style={{ marginTop: '16px' }}>
+                            <label htmlFor="client_address" className="form-label">
+                                Adresse géographique du siège (facultatif)
+                            </label>
+                            <input
+                                id="client_address"
+                                name="client_address"
+                                type="text"
+                                placeholder="Ex: Rue des Jardins, Cocody Deux-Plateaux, Abidjan"
+                                className={`form-input ${errors.client_address ? 'input-error' : ''}`}
+                                value={data.client_address}
+                                onChange={(e) => setData('client_address', e.target.value)}
+                            />
+                            {errors.client_address && (
+                                <span className="field-error-text" role="alert">
+                                    {errors.client_address}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Section 2 : Modalités de règlement & Échéance */}
+                    <div className="form-section-card" style={{ marginTop: '24px' }}>
+                        <h3 className="section-title">2. Modalités de règlement & Échéance</h3>
                         <div className="form-row">
                             <div className="form-group">
                                 <label htmlFor="due_date" className="form-label required">
@@ -113,16 +279,15 @@ export default function Create({ auth, organization, defaultDueDate }) {
                                 </label>
                                 <input
                                     id="due_date"
+                                    name="due_date"
                                     type="date"
                                     className={`form-input ${errors.due_date ? 'input-error' : ''}`}
                                     value={data.due_date}
                                     onChange={(e) => setData('due_date', e.target.value)}
-                                    aria-describedby={errors.due_date ? 'due_date_error' : undefined}
-                                    aria-invalid={!!errors.due_date}
                                     required
                                 />
                                 {errors.due_date && (
-                                    <span id="due_date_error" className="field-error-text" role="alert">
+                                    <span className="field-error-text" role="alert">
                                         {errors.due_date}
                                     </span>
                                 )}
@@ -130,19 +295,19 @@ export default function Create({ auth, organization, defaultDueDate }) {
 
                             <div className="form-group">
                                 <label htmlFor="notes" className="form-label">
-                                    Mentions complémentaires ou notes (facultatif)
+                                    Notes et conditions de paiement (facultatif)
                                 </label>
                                 <input
                                     id="notes"
+                                    name="notes"
                                     type="text"
-                                    placeholder="Ex: Conditions de paiement à 30 jours, virement bancaire..."
+                                    placeholder="Ex: Règlement par virement sous 30 jours..."
                                     className={`form-input ${errors.notes ? 'input-error' : ''}`}
                                     value={data.notes}
                                     onChange={(e) => setData('notes', e.target.value)}
-                                    aria-describedby={errors.notes ? 'notes_error' : undefined}
                                 />
                                 {errors.notes && (
-                                    <span id="notes_error" className="field-error-text" role="alert">
+                                    <span className="field-error-text" role="alert">
                                         {errors.notes}
                                     </span>
                                 )}
@@ -150,11 +315,11 @@ export default function Create({ auth, organization, defaultDueDate }) {
                         </div>
                     </div>
 
-                    {/* 2. Lignes d'articles et prestations */}
-                    <div className="form-section-card">
+                    {/* Section 3 : Lignes de facturation */}
+                    <div className="form-section-card" style={{ marginTop: '24px' }}>
                         <div className="section-header-flex">
                             <div>
-                                <h3 className="section-title">2. Lignes de facturation</h3>
+                                <h3 className="section-title">3. Lignes de facturation (Articles & Prestations)</h3>
                                 <p className="section-description">
                                     Détaillez les produits, prestations ou services faisant l'objet de cette facture.
                                 </p>
@@ -165,7 +330,8 @@ export default function Create({ auth, organization, defaultDueDate }) {
                                 className="btn-add-line"
                                 aria-label="Ajouter une nouvelle ligne d'article"
                             >
-                                ➕ Ajouter une ligne
+                                <span aria-hidden="true">➕</span>
+                                <span>Ajouter une ligne</span>
                             </button>
                         </div>
 
@@ -175,17 +341,15 @@ export default function Create({ auth, organization, defaultDueDate }) {
                             </div>
                         )}
 
-                        <div className="table-responsive">
+                        <div className="data-table-wrapper" style={{ overflowX: 'auto' }}>
                             <table className="invoice-items-form-table">
                                 <thead>
                                     <tr>
-                                        <th style={{ width: '45%' }}>Description du produit / prestation</th>
-                                        <th style={{ width: '15%' }}>Quantité</th>
-                                        <th style={{ width: '20%' }}>Prix unitaire HT (XOF)</th>
-                                        <th style={{ width: '15%' }}>Total HT (XOF)</th>
-                                        <th style={{ width: '5%' }}>
-                                            <span className="sr-only">Actions</span>
-                                        </th>
+                                        <th style={{ width: '45%' }}>Description / Prestation *</th>
+                                        <th style={{ width: '15%' }}>Quantité *</th>
+                                        <th style={{ width: '20%' }}>Prix unitaire HT (FCFA) *</th>
+                                        <th style={{ width: '15%' }}>Total HT</th>
+                                        <th style={{ width: '5%', textAlign: 'center' }}>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -198,74 +362,80 @@ export default function Create({ auth, organization, defaultDueDate }) {
                                         const priceError = errors[`items.${index}.unit_price`];
 
                                         return (
-                                            <tr key={item.id}>
+                                            <tr key={item.id || index}>
                                                 <td>
                                                     <input
                                                         type="text"
-                                                        placeholder="Ex: Prestation de conseil IT..."
-                                                        className={`form-input table-input ${descError ? 'input-error' : ''}`}
+                                                        name={`items[${index}].description`}
                                                         value={item.description}
-                                                        onChange={(e) => handleItemChange(index, 'description', e.target.value)}
+                                                        onChange={(e) =>
+                                                            handleItemChange(index, 'description', e.target.value)
+                                                        }
+                                                        placeholder="Ex: Prestation de maintenance informatique"
+                                                        className={`form-input table-input ${descError ? 'input-error' : ''}`}
                                                         aria-label={`Description ligne ${index + 1}`}
-                                                        required
                                                     />
                                                     {descError && (
-                                                        <span className="field-error-text" role="alert">
-                                                            {descError}
-                                                        </span>
+                                                        <p className="field-error-text">{descError}</p>
                                                     )}
                                                 </td>
+
                                                 <td>
                                                     <input
                                                         type="number"
+                                                        name={`items[${index}].quantity`}
                                                         min="0.01"
                                                         step="any"
-                                                        placeholder="1"
-                                                        className={`form-input table-input ${qtyError ? 'input-error' : ''}`}
                                                         value={item.quantity}
-                                                        onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                                                        onChange={(e) =>
+                                                            handleItemChange(index, 'quantity', e.target.value)
+                                                        }
+                                                        className={`form-input table-input ${qtyError ? 'input-error' : ''}`}
                                                         aria-label={`Quantité ligne ${index + 1}`}
-                                                        required
                                                     />
                                                     {qtyError && (
-                                                        <span className="field-error-text" role="alert">
-                                                            {qtyError}
-                                                        </span>
+                                                        <p className="field-error-text">{qtyError}</p>
                                                     )}
                                                 </td>
+
                                                 <td>
                                                     <input
                                                         type="number"
+                                                        name={`items[${index}].unit_price`}
                                                         min="0"
                                                         step="any"
-                                                        placeholder="50 000"
-                                                        className={`form-input table-input ${priceError ? 'input-error' : ''}`}
+                                                        placeholder="50000"
                                                         value={item.unit_price}
-                                                        onChange={(e) => handleItemChange(index, 'unit_price', e.target.value)}
+                                                        onChange={(e) =>
+                                                            handleItemChange(index, 'unit_price', e.target.value)
+                                                        }
+                                                        className={`form-input table-input ${priceError ? 'input-error' : ''}`}
                                                         aria-label={`Prix unitaire ligne ${index + 1}`}
-                                                        required
                                                     />
                                                     {priceError && (
-                                                        <span className="field-error-text" role="alert">
-                                                            {priceError}
-                                                        </span>
+                                                        <p className="field-error-text">{priceError}</p>
                                                     )}
                                                 </td>
+
                                                 <td className="cell-line-total">
                                                     <strong>{formatCurrency(lineTotal, 'XOF')}</strong>
                                                 </td>
+
                                                 <td className="cell-action">
-                                                    {data.items.length > 1 && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => removeItem(index)}
-                                                            className="btn-delete-row"
-                                                            title={`Supprimer la ligne ${index + 1}`}
-                                                            aria-label={`Supprimer la ligne ${index + 1}`}
-                                                        >
-                                                            ✕
-                                                        </button>
-                                                    )}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeItem(index)}
+                                                        disabled={data.items.length <= 1}
+                                                        className="btn-delete-row"
+                                                        title={
+                                                            data.items.length <= 1
+                                                                ? 'Une facture doit comporter au moins un article'
+                                                                : 'Supprimer cette ligne'
+                                                        }
+                                                        aria-label={`Supprimer la ligne ${index + 1}`}
+                                                    >
+                                                        🗑️
+                                                    </button>
                                                 </td>
                                             </tr>
                                         );
@@ -275,49 +445,68 @@ export default function Create({ auth, organization, defaultDueDate }) {
                         </div>
                     </div>
 
-                    {/* 3. Récapitulatif financier et Choix de validation */}
-                    <div className="invoice-bottom-grid">
-                        <div className="invoice-explanation-card">
-                            <h4 className="explanation-title">ℹ️ Cycle de vie de la facture</h4>
-                            <p className="explanation-text">
-                                • <strong>Enregistrer en brouillon :</strong> La facture reçoit un numéro séquentiel unique, les montants et taxes sont calculés et enregistrés de manière sécurisée en base de données. <em>Aucun email n'est expédié au client</em>. Vous pourrez la relire et l'émettre plus tard.
-                            </p>
-                            <p className="explanation-text">
-                                • <strong>Émettre et envoyer au client :</strong> La facture est validée immédiatement et l'avis d'émission avec la facture en pièce jointe est envoyé instantanément par notification email à l'adresse de contact du client.
+                    {/* Synthèse financière et Actions */}
+                    <div className="invoice-bottom-grid" style={{ marginTop: '24px' }}>
+                        <div className="form-section-card">
+                            <h4 className="section-title">ℹ️ Cycle de vie de la facture</h4>
+                            <p className="section-description" style={{ marginTop: '8px', lineHeight: '1.6' }}>
+                                • <strong>Enregistrer en brouillon :</strong> La facture est enregistrée avec les coordonnées du client et les calculs exacts. <em>Aucun email n'est expédié</em>. Vous pourrez la consulter et l'émettre à tout moment.<br />
+                                • <strong>Émettre et envoyer au client :</strong> La facture est validée et l'email de notification est expédié immédiatement à l'adresse du client avec le récapitulatif complet.
                             </p>
                         </div>
 
-                        <div className="invoice-financial-summary-card">
-                            <h4 className="summary-title">Récapitulatif Financier</h4>
-                            <div className="summary-row">
-                                <span className="summary-label">Sous-total HT :</span>
-                                <span className="summary-value">{formatCurrency(financials.subtotal, 'XOF')}</span>
+                        <div className="summary-card">
+                            <h3 className="summary-title">Récapitulatif Financier</h3>
+
+                            <div className="summary-line">
+                                <span className="summary-label">Sous-total Hors Taxes :</span>
+                                <span className="summary-value">
+                                    {formatCurrency(financials.subtotal, 'XOF')}
+                                </span>
                             </div>
-                            <div className="summary-row">
-                                <span className="summary-label">TVA (18%) :</span>
-                                <span className="summary-value">{formatCurrency(financials.taxAmount, 'XOF')}</span>
+
+                            <div className="summary-line">
+                                <span className="summary-label">TVA applicable (18%) :</span>
+                                <span className="summary-value">
+                                    {formatCurrency(financials.taxAmount, 'XOF')}
+                                </span>
                             </div>
-                            <div className="summary-row total-highlight">
-                                <span className="summary-label">Total TTC à payer :</span>
-                                <span className="summary-value total-price">{formatCurrency(financials.total, 'XOF')}</span>
+
+                            <div className="summary-divider" />
+
+                            <div className="summary-line total">
+                                <span className="summary-label-total">Total Net TTC :</span>
+                                <span className="total-price">
+                                    {formatCurrency(financials.total, 'XOF')}
+                                </span>
                             </div>
 
                             <div className="summary-actions-group">
                                 <button
-                                    type="button"
+                                    type="submit"
                                     disabled={processing}
-                                    onClick={() => handleSubmit('draft')}
                                     className="btn-save-draft"
                                 >
-                                    💾 Enregistrer en brouillon
+                                    <span>💾</span>
+                                    <span>
+                                        {processing && data.action === 'draft'
+                                            ? 'Enregistrement...'
+                                            : 'Enregistrer en brouillon'}
+                                    </span>
                                 </button>
+
                                 <button
                                     type="button"
-                                    disabled={processing}
                                     onClick={() => handleSubmit('send')}
+                                    disabled={processing}
                                     className="btn-emit-send"
                                 >
-                                    🚀 Émettre et envoyer au client
+                                    <span>🚀</span>
+                                    <span>
+                                        {processing && data.action === 'send'
+                                            ? 'Transmission en cours...'
+                                            : 'Émettre et envoyer au client'}
+                                    </span>
                                 </button>
                             </div>
                         </div>

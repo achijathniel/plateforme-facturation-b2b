@@ -185,6 +185,7 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
                         <thead>
                             <tr>
                                 <th scope="col">Numéro</th>
+                                <th scope="col">Client</th>
                                 <th scope="col">Date d'émission</th>
                                 <th scope="col">Échéance</th>
                                 <th scope="col">Montant Total</th>
@@ -195,7 +196,7 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
                         <tbody>
                             {invoiceList.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className="table-empty-cell">
+                                    <td colSpan="7" className="table-empty-cell">
                                         <div className="table-empty-state">
                                             <span className="empty-state-icon" aria-hidden="true">
                                                 {hasActiveFilters ? '🔍' : '📑'}
@@ -249,6 +250,18 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
                                             >
                                                 {invoice.invoice_number}
                                             </Link>
+                                        </td>
+                                        <td>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                                <strong style={{ color: 'var(--text-primary)' }}>
+                                                    {invoice.client_name || '-'}
+                                                </strong>
+                                                {invoice.client_email && (
+                                                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                                                        {invoice.client_email}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td>
                                             {invoice.issue_date

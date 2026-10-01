@@ -6,7 +6,8 @@ import { formatCurrency } from '../../../Utils/formatters';
 
 /**
  * Page de modification d'une facture existante dans l'espace portail comptable.
- * Permet au comptable d'éditer la date d'échéance, les notes et les lignes d'articles,
+ * Permet au comptable d'éditer les coordonnées de l'entreprise cliente,
+ * la date d'échéance, les notes et les lignes d'articles,
  * de recalculer en direct les totaux financiers (HT, TVA 18%, TTC),
  * et d'enregistrer les modifications en tant que brouillon ou de les émettre directement vers le client.
  *
@@ -16,6 +17,11 @@ import { formatCurrency } from '../../../Utils/formatters';
  *     invoice: {
  *         id: number,
  *         invoice_number: string,
+ *         client_name?: string,
+ *         client_email?: string,
+ *         client_address?: string,
+ *         client_tax_number?: string,
+ *         client_phone?: string,
  *         status: string,
  *         due_date: string|null,
  *         notes: string|null,
@@ -46,6 +52,11 @@ export default function Edit({ auth, organization, invoice }) {
         : [createEmptyItem()];
 
     const { data, setData, put, processing, errors, transform } = useForm({
+        client_name: invoice.client_name || '',
+        client_email: invoice.client_email || '',
+        client_address: invoice.client_address || '',
+        client_tax_number: invoice.client_tax_number || '',
+        client_phone: invoice.client_phone || '',
         due_date: invoice.due_date || '',
         notes: invoice.notes || '',
         action: 'draft',
@@ -57,7 +68,6 @@ export default function Edit({ auth, organization, invoice }) {
         const updatedItems = [...data.items];
 
         let sanitizedValue = value;
-        // Permettre la saisie souple avec espaces ou virgules décimales pour les prix et quantités
         if (field === 'unit_price' || field === 'quantity') {
             sanitizedValue = typeof value === 'string'
                 ? value.replace(/\s+/g, '').replace(',', '.')
@@ -116,7 +126,7 @@ export default function Edit({ auth, organization, invoice }) {
         if (actionType === 'send') {
             Swal.fire({
                 title: 'Enregistrer et envoyer au client ?',
-                text: `La facture ${invoice.invoice_number} sera mise à jour, validée et expédiée immédiatement par email au client.`,
+                text: `La facture ${invoice.invoice_number} sera mise à jour et expédiée immédiatement par email à ${data.client_email || "l'adresse du client"}.`,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Oui, enregistrer et envoyer',
@@ -141,7 +151,7 @@ export default function Edit({ auth, organization, invoice }) {
             title={`Modifier la facture ${invoice.invoice_number}`}
         >
             <div className="invoice-create-container">
-                {/* En-tête de la page avec fil d'ariane et titre */}
+                {/* En-tête de la page */}
                 <div className="page-header-row">
                     <div>
                         <div className="breadcrumb-nav">
@@ -177,11 +187,129 @@ export default function Edit({ auth, organization, invoice }) {
                         </div>
                     )}
 
-                    {/* Section 1 : Lignes d'articles de la facture */}
+                    {/* Section 1 : Entreprise Cliente (Destinataire B2B) */}
                     <div className="form-section-card">
                         <div className="section-header-flex">
                             <div>
-                                <h3 className="section-title">Prestations et Articles</h3>
+                                <h3 className="section-title">1. Entreprise Cliente (Destinataire B2B)</h3>
+                                <p className="section-description">
+                                    Modifiez les coordonnées de l'entreprise cliente destinataire de cette facture.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label htmlFor="client_name" className="form-label required">
+                                    Nom / Raison sociale de l'entreprise cliente
+                                </label>
+                                <input
+                                    id="client_name"
+                                    name="client_name"
+                                    type="text"
+                                    placeholder="Ex: Société Ivoirienne de Négoce (SIN)"
+                                    className={`form-input ${errors.client_name ? 'input-error' : ''}`}
+                                    value={data.client_name}
+                                    onChange={(e) => setData('client_name', e.target.value)}
+                                    required
+                                />
+                                {errors.client_name && (
+                                    <span className="field-error-text" role="alert">
+                                        {errors.client_name}
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="client_email" className="form-label required">
+                                    Email de facturation du client (Destinataire)
+                                </label>
+                                <input
+                                    id="client_email"
+                                    name="client_email"
+                                    type="email"
+                                    placeholder="Ex: facturation@client-negoce.ci"
+                                    className={`form-input ${errors.client_email ? 'input-error' : ''}`}
+                                    value={data.client_email}
+                                    onChange={(e) => setData('client_email', e.target.value)}
+                                    required
+                                />
+                                {errors.client_email && (
+                                    <span className="field-error-text" role="alert">
+                                        {errors.client_email}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="form-row" style={{ marginTop: '16px' }}>
+                            <div className="form-group">
+                                <label htmlFor="client_tax_number" className="form-label">
+                                    NIF / N° Registre de Commerce (facultatif)
+                                </label>
+                                <input
+                                    id="client_tax_number"
+                                    name="client_tax_number"
+                                    type="text"
+                                    placeholder="Ex: CI-ABJ-2023-B-12345"
+                                    className={`form-input ${errors.client_tax_number ? 'input-error' : ''}`}
+                                    value={data.client_tax_number}
+                                    onChange={(e) => setData('client_tax_number', e.target.value)}
+                                />
+                                {errors.client_tax_number && (
+                                    <span className="field-error-text" role="alert">
+                                        {errors.client_tax_number}
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="client_phone" className="form-label">
+                                    Téléphone de contact (facultatif)
+                                </label>
+                                <input
+                                    id="client_phone"
+                                    name="client_phone"
+                                    type="tel"
+                                    placeholder="Ex: +225 07 00 00 00 00"
+                                    className={`form-input ${errors.client_phone ? 'input-error' : ''}`}
+                                    value={data.client_phone}
+                                    onChange={(e) => setData('client_phone', e.target.value)}
+                                />
+                                {errors.client_phone && (
+                                    <span className="field-error-text" role="alert">
+                                        {errors.client_phone}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="form-group" style={{ marginTop: '16px' }}>
+                            <label htmlFor="client_address" className="form-label">
+                                Adresse géographique du siège (facultatif)
+                            </label>
+                            <input
+                                id="client_address"
+                                name="client_address"
+                                type="text"
+                                placeholder="Ex: Rue des Jardins, Cocody Deux-Plateaux, Abidjan"
+                                className={`form-input ${errors.client_address ? 'input-error' : ''}`}
+                                value={data.client_address}
+                                onChange={(e) => setData('client_address', e.target.value)}
+                            />
+                            {errors.client_address && (
+                                <span className="field-error-text" role="alert">
+                                    {errors.client_address}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Section 2 : Prestations et Articles */}
+                    <div className="form-section-card" style={{ marginTop: '24px' }}>
+                        <div className="section-header-flex">
+                            <div>
+                                <h3 className="section-title">2. Prestations et Articles</h3>
                                 <p className="section-description">
                                     Modifiez ou ajustez les désignations, quantités et prix unitaires HT.
                                 </p>
@@ -308,10 +436,10 @@ export default function Edit({ auth, organization, invoice }) {
                         </div>
                     </div>
 
-                    {/* Section 2 : Conditions de règlement & Synthèse financière */}
-                    <div className="invoice-bottom-grid">
+                    {/* Section 3 : Modalités & Synthèse financière */}
+                    <div className="invoice-bottom-grid" style={{ marginTop: '24px' }}>
                         <div className="form-section-card">
-                            <h3 className="section-title">Modalités & Règlement</h3>
+                            <h3 className="section-title">3. Modalités & Règlement</h3>
                             <p className="section-description">
                                 Date limite de règlement et mentions particulières.
                             </p>
@@ -327,6 +455,7 @@ export default function Edit({ auth, organization, invoice }) {
                                     value={data.due_date}
                                     onChange={(e) => setData('due_date', e.target.value)}
                                     className={`form-input ${errors.due_date ? 'input-error' : ''}`}
+                                    required
                                 />
                                 {errors.due_date && (
                                     <p className="field-error-text">{errors.due_date}</p>
@@ -400,7 +529,7 @@ export default function Edit({ auth, organization, invoice }) {
                                     disabled={processing}
                                     className="btn-emit-send"
                                 >
-                                    <span>✉️</span>
+                                    <span>🚀</span>
                                     <span>
                                         {processing && data.action === 'send'
                                             ? 'Transmission en cours...'

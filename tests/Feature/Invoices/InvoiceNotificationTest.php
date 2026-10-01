@@ -32,8 +32,10 @@ class InvoiceNotificationTest extends TestCase
         $token = $accountant->createToken('acc-token')->plainTextToken;
 
         $payload = [
-            'due_date' => now()->addDays(30)->toDateString(),
-            'items'    => [
+            'client_name'  => 'Entreprise Client B2B',
+            'client_email' => 'comptabilite@client-b2b.com',
+            'due_date'     => now()->addDays(30)->toDateString(),
+            'items'        => [
                 [
                     'description' => 'Abonnement Cloud Annuel',
                     'quantity'    => 1,
@@ -49,32 +51,59 @@ class InvoiceNotificationTest extends TestCase
 
         // Vérification que le Job a bien été poussé dans la Queue
         Queue::assertPushed(SendInvoiceNotificationJob::class, function ($job) use ($org) {
-            return $job->invoice->organization_id === $org->id;
+            return $job->invoice->organization_id === $org->id
+                && $job->invoice->client_email === 'comptabilite@client-b2b.com';
         });
     }
 
     /**
-     * Test 2 : Le Job exécute l'envoi de l'email avec le bon destinataire et la bonne facture.
+     * Test 2 : Le Job exécute l'envoi de l'email directement à l'adresse de facturation du client B2B.
      */
-    public function test_notification_job_sends_email_to_organization(): void
+    public function test_notification_job_sends_email_to_client(): void
     {
         Mail::fake();
 
         $org = Organization::factory()->create([
-            'email' => 'direction@client-dealtoo.com',
+            'email' => 'emetteur@societe-fournisseur.com',
         ]);
 
         $invoice = Invoice::factory()->create([
             'organization_id' => $org->id,
             'invoice_number'  => 'INV-2026-TEST01',
+            'client_email'    => 'direction@client-dealtoo.com',
         ]);
 
         // Exécution directe de la méthode handle() du Job
         (new SendInvoiceNotificationJob($invoice))->handle();
 
-        // Vérification que le mail a été envoyé à la bonne adresse avec le bon Mailable
+        // Vérification que le mail a été envoyé à l'adresse email du client destinataire
         Mail::assertSent(InvoiceGeneratedMail::class, function ($mail) use ($invoice) {
             return $mail->hasTo('direction@client-dealtoo.com')
+                && $mail->invoice->id === $invoice->id;
+        });
+    }
+
+    /**
+     * Test 3 : En cas d'absence d'email client, le Job effectue un fallback vers l'email de l'organisation.
+     */
+    public function test_notification_job_fallbacks_to_organization_email_if_client_email_empty(): void
+    {
+        Mail::fake();
+
+        $org = Organization::factory()->create([
+            'email' => 'fallback@societe-emetteur.com',
+        ]);
+
+        $invoice = Invoice::factory()->create([
+            'organization_id' => $org->id,
+            'invoice_number'  => 'INV-2026-TEST02',
+            'client_email'    => null,
+        ]);
+
+        (new SendInvoiceNotificationJob($invoice))->handle();
+
+        Mail::assertSent(InvoiceGeneratedMail::class, function ($mail) use ($invoice) {
+            return $mail->hasTo('fallback@societe-emetteur.com')
                 && $mail->invoice->id === $invoice->id;
         });
     }

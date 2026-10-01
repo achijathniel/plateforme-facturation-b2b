@@ -27,6 +27,11 @@ class StoreInvoiceRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
+            'client_name'         => ['required', 'string', 'max:255'],
+            'client_email'        => ['required', 'email', 'max:255'],
+            'client_address'      => ['nullable', 'string', 'max:500'],
+            'client_tax_number'   => ['nullable', 'string', 'max:50'],
+            'client_phone'        => ['nullable', 'string', 'max:30'],
             'due_date'            => ['required', 'date', 'after_or_equal:today'],
             'notes'               => ['nullable', 'string', 'max:1000'],
             'items'               => ['required', 'array', 'min:1'],
@@ -36,7 +41,7 @@ class StoreInvoiceRequest extends FormRequest
             'action'              => ['nullable', 'string', 'in:draft,send'],
         ];
 
-        // Seul un Administrateur peut spécifier l'organisation cible (vue globale)
+        // Seul un Administrateur peut spécifier l'organisation émettrice cible (vue globale)
         if ($this->user()?->role === UserRole::ADMIN) {
             $rules['organization_id'] = ['required', 'integer', 'exists:organizations,id'];
         }
@@ -52,6 +57,10 @@ class StoreInvoiceRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'client_name.required'        => 'Le nom de l\'entreprise cliente est obligatoire.',
+            'client_name.max'             => 'Le nom du client ne peut pas dépasser 255 caractères.',
+            'client_email.required'       => 'L\'adresse email de l\'entreprise cliente est obligatoire.',
+            'client_email.email'          => 'L\'adresse email du client doit être une adresse valide.',
             'due_date.required'           => 'La date d\'échéance est obligatoire.',
             'due_date.after_or_equal'     => 'La date d\'échéance ne peut pas être antérieure à aujourd\'hui.',
             'items.required'              => 'La facture doit comporter au moins une ligne d\'article.',
@@ -75,11 +84,19 @@ class StoreInvoiceRequest extends FormRequest
             ? (int) $this->validated('organization_id')
             : (int) $this->user()->organization_id;
 
+        $notes = $this->validated('notes');
+        $items = $this->validated('items');
+
         return CreateInvoiceDTO::fromRequest(
             organizationId: $organizationId,
+            clientName: (string) $this->validated('client_name'),
+            clientEmail: (string) $this->validated('client_email'),
+            clientAddress: is_string($this->validated('client_address')) ? $this->validated('client_address') : null,
+            clientTaxNumber: is_string($this->validated('client_tax_number')) ? $this->validated('client_tax_number') : null,
+            clientPhone: is_string($this->validated('client_phone')) ? $this->validated('client_phone') : null,
             dueDate: (string) $this->validated('due_date'),
-            notes: $this->validated('notes'),
-            items: $this->validated('items'),
+            notes: is_string($notes) ? $notes : null,
+            items: is_array($items) ? $items : [],
         );
     }
 }

@@ -136,26 +136,31 @@ final class PortalInvoiceController extends Controller
 
         return Inertia::render('Portal/Invoices/Show', [
             'invoice' => [
-                'id'             => $invoice->id,
-                'invoice_number' => $invoice->invoice_number,
-                'status'         => $invoice->status->value,
-                'issue_date'     => $invoice->issue_date?->toDateString(),
-                'due_date'       => $invoice->due_date?->toDateString(),
-                'subtotal'       => (string) $invoice->subtotal,
-                'tax_amount'     => (string) $invoice->tax_amount,
-                'total'          => (string) $invoice->total,
-                'currency'       => $invoice->currency ?? 'XOF',
-                'notes'          => $invoice->notes,
-                'can_edit'       => Gate::allows('update', $invoice),
-                'can_send'       => $invoice->status === InvoiceStatus::DRAFT && Gate::allows('update', $invoice),
-                'items'          => $invoice->items->map(fn ($item) => [
+                'id'                => $invoice->id,
+                'invoice_number'    => $invoice->invoice_number,
+                'client_name'       => $invoice->client_name,
+                'client_email'      => $invoice->client_email,
+                'client_address'    => $invoice->client_address,
+                'client_tax_number' => $invoice->client_tax_number,
+                'client_phone'      => $invoice->client_phone,
+                'status'            => $invoice->status->value,
+                'issue_date'        => $invoice->issue_date?->toDateString(),
+                'due_date'          => $invoice->due_date?->toDateString(),
+                'subtotal'          => (string) $invoice->subtotal,
+                'tax_amount'        => (string) $invoice->tax_amount,
+                'total'             => (string) $invoice->total,
+                'currency'          => $invoice->currency ?? 'XOF',
+                'notes'             => $invoice->notes,
+                'can_edit'          => Gate::allows('update', $invoice),
+                'can_send'          => $invoice->status === InvoiceStatus::DRAFT && Gate::allows('update', $invoice),
+                'items'             => $invoice->items->map(fn ($item) => [
                     'id'          => $item->id,
                     'description' => $item->description,
                     'quantity'    => (float) $item->quantity,
                     'unit_price'  => (string) $item->unit_price,
                     'total'       => (string) $item->total,
                 ]),
-                'payments'       => $invoice->payments->map(fn ($p) => [
+                'payments'          => $invoice->payments->map(fn ($p) => [
                     'id'             => $p->id,
                     'payment_method' => $p->payment_method->value,
                     'status'         => $p->status->value,
@@ -189,12 +194,17 @@ final class PortalInvoiceController extends Controller
 
         return Inertia::render('Portal/Invoices/Edit', [
             'invoice' => [
-                'id'             => $invoice->id,
-                'invoice_number' => $invoice->invoice_number,
-                'status'         => $invoice->status->value,
-                'due_date'       => $invoice->due_date?->toDateString(),
-                'notes'          => $invoice->notes ?? '',
-                'items'          => $invoice->items->map(fn ($item) => [
+                'id'                => $invoice->id,
+                'invoice_number'    => $invoice->invoice_number,
+                'client_name'       => $invoice->client_name ?? '',
+                'client_email'      => $invoice->client_email ?? '',
+                'client_address'    => $invoice->client_address ?? '',
+                'client_tax_number' => $invoice->client_tax_number ?? '',
+                'client_phone'      => $invoice->client_phone ?? '',
+                'status'            => $invoice->status->value,
+                'due_date'          => $invoice->due_date?->toDateString(),
+                'notes'             => $invoice->notes ?? '',
+                'items'             => $invoice->items->map(fn ($item) => [
                     'id'          => $item->id,
                     'description' => $item->description,
                     'quantity'    => (float) $item->quantity,

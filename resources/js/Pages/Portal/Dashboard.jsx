@@ -97,6 +97,7 @@ export default function Dashboard({ auth, organization, stats }) {
                         <thead>
                             <tr>
                                 <th scope="col">Numéro</th>
+                                <th scope="col">Client</th>
                                 <th scope="col">Date d'Émission</th>
                                 <th scope="col">Échéance</th>
                                 <th scope="col">Montant Total</th>
@@ -133,6 +134,11 @@ export default function Dashboard({ auth, organization, stats }) {
                                                 {invoice.invoice_number}
                                             </Link>
                                         </td>
+                                        <td>
+                                            <strong style={{ color: 'var(--text-primary)' }}>
+                                                {invoice.client_name || '-'}
+                                            </strong>
+                                        </td>
                                         <td>{invoice.issue_date}</td>
                                         <td>{invoice.due_date}</td>
                                         <td>
@@ -150,7 +156,7 @@ export default function Dashboard({ auth, organization, stats }) {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={5} className="table-empty-cell">
+                                    <td colSpan={6} className="table-empty-cell">
                                         <div className="table-empty-state">
                                             <span className="empty-state-icon" aria-hidden="true">
                                                 📄

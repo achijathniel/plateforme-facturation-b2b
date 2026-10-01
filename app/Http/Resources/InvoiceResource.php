@@ -35,6 +35,13 @@ class InvoiceResource extends JsonResource
                 'due_date'   => $this->due_date?->toDateString(),
             ],
             'notes'          => $this->notes,
+            'client'         => [
+                'name'       => $this->client_name,
+                'email'      => $this->client_email,
+                'address'    => $this->client_address,
+                'tax_number' => $this->client_tax_number,
+                'phone'      => $this->client_phone,
+            ],
             'organization'   => $this->whenLoaded('organization', function () {
                 return [
                     'id'         => $this->organization->id,

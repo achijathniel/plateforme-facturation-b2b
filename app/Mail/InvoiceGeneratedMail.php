@@ -25,8 +25,10 @@ class InvoiceGeneratedMail extends Mailable
      */
     public function envelope(): Envelope
     {
+        $senderName = $this->invoice->organization?->name ?? 'DUGHU DEALTOO';
+
         return new Envelope(
-            subject: "Facture disponible : {$this->invoice->invoice_number} — DUGHU DEALTOO",
+            subject: "Facture disponible : {$this->invoice->invoice_number} — {$senderName}",
         );
     }
 

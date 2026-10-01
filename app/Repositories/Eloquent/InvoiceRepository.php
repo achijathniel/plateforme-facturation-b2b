@@ -69,6 +69,7 @@ class InvoiceRepository implements InvoiceRepositoryInterface
             $term = '%' . strtolower(trim($filter->search)) . '%';
             $query->where(function ($q) use ($term) {
                 $q->whereRaw('LOWER(invoice_number) LIKE ?', [$term])
+                    ->orWhereRaw('LOWER(client_name) LIKE ?', [$term])
                     ->orWhereRaw('LOWER(notes) LIKE ?', [$term]);
             });
         }

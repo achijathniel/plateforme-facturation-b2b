@@ -23,14 +23,23 @@
 <body>
     <div class="card">
         <div class="header">
-            <h1>DUGHU DEALTOO SAS</h1>
+            <h1>{{ $invoice->organization->name }}</h1>
             <p style="margin: 4px 0 0; font-size: 13px; opacity: 0.8;">Plateforme de Facturation & Abonnements B2B</p>
         </div>
         <div class="content">
             <span class="invoice-badge">Facture Émise</span>
             <h2 style="margin: 0 0 8px; font-size: 18px;">Facture n° {{ $invoice->invoice_number }}</h2>
             <p style="margin: 0 0 16px; color: #64748b; font-size: 14px;">
-                Destinataire : <strong>{{ $invoice->organization->name }}</strong><br>
+                Client / Destinataire : <strong>{{ $invoice->client_name ?? $invoice->organization->name }}</strong><br>
+                @if($invoice->client_email)
+                    Email de contact : <strong>{{ $invoice->client_email }}</strong><br>
+                @endif
+                @if($invoice->client_address)
+                    Adresse : {{ $invoice->client_address }}<br>
+                @endif
+                @if($invoice->client_tax_number)
+                    NIF / N° Fiscal : {{ $invoice->client_tax_number }}<br>
+                @endif
                 Date d'émission : {{ $invoice->issue_date?->format('d/m/Y') }}<br>
                 Date d'échéance : <strong>{{ $invoice->due_date?->format('d/m/Y') }}</strong>
             </p>

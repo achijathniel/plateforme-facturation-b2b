@@ -84,10 +84,13 @@ final class PortalInvoiceCreationTest extends TestCase
         ]);
 
         $payload = [
-            'due_date' => now()->addDays(30)->toDateString(),
-            'notes'    => 'Brouillon pour consultation préalable',
-            'action'   => 'draft',
-            'items'    => [
+            'client_name'    => 'Client Entreprise Test',
+            'client_email'   => 'contact@client-test.com',
+            'client_address' => '45 Rue des Entreprises, Abidjan',
+            'due_date'       => now()->addDays(30)->toDateString(),
+            'notes'          => 'Brouillon pour consultation préalable',
+            'action'         => 'draft',
+            'items'          => [
                 [
                     'description' => 'Prestation audit financier',
                     'quantity'    => 2,
@@ -101,9 +104,11 @@ final class PortalInvoiceCreationTest extends TestCase
         $response->assertRedirect(route('portal.dashboard'));
         $response->assertSessionHas('success');
 
-        // Vérification en base : statut DRAFT
+        // Vérification en base : statut DRAFT avec données client
         $this->assertDatabaseHas('invoices', [
             'organization_id' => $org->id,
+            'client_name'     => 'Client Entreprise Test',
+            'client_email'    => 'contact@client-test.com',
             'status'          => InvoiceStatus::DRAFT->value,
             'subtotal'        => '500000.00',
             'tax_amount'      => '90000.00',
@@ -128,10 +133,13 @@ final class PortalInvoiceCreationTest extends TestCase
         ]);
 
         $payload = [
-            'due_date' => now()->addDays(30)->toDateString(),
-            'notes'    => 'Facture directe pour validation client',
-            'action'   => 'send',
-            'items'    => [
+            'client_name'    => 'Client Direct SARL',
+            'client_email'   => 'validation@client-direct.com',
+            'client_address' => 'Plateau, Immeuble Alpha',
+            'due_date'       => now()->addDays(30)->toDateString(),
+            'notes'          => 'Facture directe pour validation client',
+            'action'         => 'send',
+            'items'          => [
                 [
                     'description' => 'Développement spécifique Laravel',
                     'quantity'    => 1,
@@ -145,16 +153,19 @@ final class PortalInvoiceCreationTest extends TestCase
         $response->assertRedirect(route('portal.dashboard'));
         $response->assertSessionHas('success');
 
-        // Vérification en base : statut SENT
+        // Vérification en base : statut SENT avec coordonnées client
         $this->assertDatabaseHas('invoices', [
             'organization_id' => $org->id,
+            'client_name'     => 'Client Direct SARL',
+            'client_email'    => 'validation@client-direct.com',
             'status'          => InvoiceStatus::SENT->value,
             'total'           => '944000.00',
         ]);
 
-        // Le job de notification DOIT avoir été dispatché
+        // Le job de notification DOIT avoir été dispatché vers le client
         Queue::assertPushed(SendInvoiceNotificationJob::class, function ($job) use ($org) {
-            return $job->invoice->organization_id === $org->id;
+            return $job->invoice->organization_id === $org->id
+                && $job->invoice->client_email === 'validation@client-direct.com';
         });
     }
 
@@ -316,6 +327,38 @@ final class PortalInvoiceCreationTest extends TestCase
             ->has('invoices.data', 1)
             ->where('invoices.data.0.status', InvoiceStatus::DRAFT->value)
             ->where('filters.status', 'draft')
+        );
+    }
+
+    /**
+     * Test 11 : Un comptable peut rechercher une facture par la raison sociale du client.
+     */
+    public function test_accountant_can_filter_invoices_by_client_name(): void
+    {
+        $org = Organization::factory()->create();
+        $accountant = User::factory()->create([
+            'organization_id' => $org->id,
+            'role'            => UserRole::ACCOUNTANT,
+        ]);
+
+        Invoice::factory()->create([
+            'organization_id' => $org->id,
+            'client_name'     => 'Société Industrielle d’Abidjan',
+        ]);
+
+        Invoice::factory()->create([
+            'organization_id' => $org->id,
+            'client_name'     => 'Boutique Alpha Tech',
+        ]);
+
+        $response = $this->actingAs($accountant)->get(route('portal.invoices.index', ['search' => 'Industrielle']));
+
+        $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Portal/Invoices/Index')
+            ->has('invoices.data', 1)
+            ->where('invoices.data.0.client_name', 'Société Industrielle d’Abidjan')
+            ->where('filters.search', 'Industrielle')
         );
     }
 }

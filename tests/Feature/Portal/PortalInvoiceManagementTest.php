@@ -171,10 +171,13 @@ final class PortalInvoiceManagementTest extends TestCase
         ]);
 
         $payload = [
-            'due_date' => now()->addDays(20)->toDateString(),
-            'notes'    => 'Conditions mises à jour',
-            'action'   => 'draft',
-            'items'    => [
+            'client_name'    => 'Client SARL Modifie',
+            'client_email'   => 'compta@client-sarl.com',
+            'client_address' => 'Nouvelle adresse client',
+            'due_date'       => now()->addDays(20)->toDateString(),
+            'notes'          => 'Conditions mises à jour',
+            'action'         => 'draft',
+            'items'          => [
                 [
                     'description' => 'Nouveau matériel serveur',
                     'quantity'    => 2,
@@ -198,12 +201,14 @@ final class PortalInvoiceManagementTest extends TestCase
 
         // Vérification de la persistance et du recalcul exact en base de données
         $this->assertDatabaseHas('invoices', [
-            'id'         => $invoice->id,
-            'status'     => InvoiceStatus::DRAFT->value,
-            'notes'      => 'Conditions mises à jour',
-            'subtotal'   => 450000.00, // (2 * 200 000) + (1 * 50 000)
-            'tax_amount' => 81000.00,  // 450 000 * 18%
-            'total'      => 531000.00, // 450 000 + 81 000
+            'id'           => $invoice->id,
+            'client_name'  => 'Client SARL Modifie',
+            'client_email' => 'compta@client-sarl.com',
+            'status'       => InvoiceStatus::DRAFT->value,
+            'notes'        => 'Conditions mises à jour',
+            'subtotal'     => 450000.00, // (2 * 200 000) + (1 * 50 000)
+            'tax_amount'   => 81000.00,  // 450 000 * 18%
+            'total'        => 531000.00, // 450 000 + 81 000
         ]);
 
         // Vérification que les anciens articles ont été remplacés par les nouveaux
@@ -240,10 +245,12 @@ final class PortalInvoiceManagementTest extends TestCase
         ]);
 
         $payload = [
-            'due_date' => now()->addDays(30)->toDateString(),
-            'notes'    => 'Paiement immédiat requis',
-            'action'   => 'send',
-            'items'    => [
+            'client_name'  => 'Client Entreprise Envoi',
+            'client_email' => 'envoi@client-entreprise.com',
+            'due_date'     => now()->addDays(30)->toDateString(),
+            'notes'        => 'Paiement immédiat requis',
+            'action'       => 'send',
+            'items'        => [
                 [
                     'description' => 'Développement spécifique API',
                     'quantity'    => 1,
@@ -260,15 +267,18 @@ final class PortalInvoiceManagementTest extends TestCase
         $response->assertRedirect(route('portal.invoices.show', $invoice->id));
         $response->assertSessionHas('success');
 
-        // Le statut doit avoir basculé vers SENT
+        // Le statut doit avoir basculé vers SENT avec mise à jour du client
         $this->assertDatabaseHas('invoices', [
-            'id'     => $invoice->id,
-            'status' => InvoiceStatus::SENT->value,
-            'total'  => 354000.00, // 300 000 + (300 000 * 0.18)
+            'id'           => $invoice->id,
+            'client_name'  => 'Client Entreprise Envoi',
+            'client_email' => 'envoi@client-entreprise.com',
+            'status'       => InvoiceStatus::SENT->value,
+            'total'        => 354000.00, // 300 000 + (300 000 * 0.18)
         ]);
 
         Queue::assertPushed(SendInvoiceNotificationJob::class, function ($job) use ($invoice) {
-            return $job->invoice->id === $invoice->id;
+            return $job->invoice->id === $invoice->id
+                && $job->invoice->client_email === 'envoi@client-entreprise.com';
         });
     }
 

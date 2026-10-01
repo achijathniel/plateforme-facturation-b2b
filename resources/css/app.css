@@ -1727,6 +1727,43 @@ input, button {
     font-family: monospace;
     color: var(--blue-primary);
     margin: 0 0 6px 0;
+/* Grille Émetteur & Destinataire B2B */
+.invoice-doc-parties-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.party-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.party-type-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+}
+
+.party-name {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.party-detail {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 2px 0 0 0;
+    line-height: 1.4;
 }
 
 .invoice-doc-dates-grid {

@@ -25,9 +25,12 @@ class InvoiceCreationTest extends TestCase
         $token = $accountant->createToken('acc-token')->plainTextToken;
 
         $payload = [
-            'due_date' => now()->addDays(30)->toDateString(),
-            'notes'    => 'Facture de prestation de services IT.',
-            'items'    => [
+            'client_name'    => 'Entreprise Client SAS',
+            'client_email'   => 'contact@entreprise-client.fr',
+            'client_address' => '123 Avenue des Affaires, Paris',
+            'due_date'       => now()->addDays(30)->toDateString(),
+            'notes'          => 'Facture de prestation de services IT.',
+            'items'          => [
                 [
                     'description' => 'Développement API REST Laravel',
                     'quantity'    => 2,
@@ -49,6 +52,8 @@ class InvoiceCreationTest extends TestCase
         // Total TTC = 1 593 000 XOF
         $response->assertStatus(201)
             ->assertJsonPath('data.organization.id', $org->id)
+            ->assertJsonPath('data.client.name', 'Entreprise Client SAS')
+            ->assertJsonPath('data.client.email', 'contact@entreprise-client.fr')
             ->assertJsonPath('data.financials.subtotal', 1350000)
             ->assertJsonPath('data.financials.tax_amount', 243000)
             ->assertJsonPath('data.financials.total', 1593000)
@@ -58,6 +63,8 @@ class InvoiceCreationTest extends TestCase
         // Vérification en base de données
         $this->assertDatabaseHas('invoices', [
             'organization_id' => $org->id,
+            'client_name'     => 'Entreprise Client SAS',
+            'client_email'    => 'contact@entreprise-client.fr',
             'subtotal'        => '1350000.00',
             'tax_amount'      => '243000.00',
             'total'           => '1593000.00',
@@ -107,6 +114,8 @@ class InvoiceCreationTest extends TestCase
 
         $payload = [
             'organization_id' => $org->id,
+            'client_name'     => 'Client Multinational SARL',
+            'client_email'    => 'facturation@client-multi.com',
             'due_date'        => now()->addDays(20)->toDateString(),
             'items'           => [
                 [
@@ -122,12 +131,16 @@ class InvoiceCreationTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonPath('data.organization.id', $org->id)
+            ->assertJsonPath('data.client.name', 'Client Multinational SARL')
+            ->assertJsonPath('data.client.email', 'facturation@client-multi.com')
             ->assertJsonPath('data.financials.subtotal', 800000)
             ->assertJsonPath('data.financials.tax_amount', 144000)
             ->assertJsonPath('data.financials.total', 944000);
 
         $this->assertDatabaseHas('invoices', [
             'organization_id' => $org->id,
+            'client_name'     => 'Client Multinational SARL',
+            'client_email'    => 'facturation@client-multi.com',
             'total'           => '944000.00',
         ]);
     }

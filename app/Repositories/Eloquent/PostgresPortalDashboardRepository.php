@@ -48,6 +48,7 @@ final class PostgresPortalDashboardRepository implements PortalDashboardReposito
                 SELECT 
                     i.id,
                     i.invoice_number,
+                    i.client_name,
                     i.total,
                     i.currency,
                     i.status,
@@ -116,6 +117,7 @@ final class PostgresPortalDashboardRepository implements PortalDashboardReposito
             ->map(fn (Invoice $invoice) => [
                 'id'                => $invoice->id,
                 'invoice_number'    => $invoice->invoice_number,
+                'client_name'       => $invoice->client_name,
                 'total'             => (string) $invoice->total,
                 'currency'          => $invoice->currency,
                 'status'            => $invoice->status?->value ?? (string) $invoice->status,
