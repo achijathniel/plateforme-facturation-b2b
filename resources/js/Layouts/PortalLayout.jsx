@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
+import FlashMessages from '../Components/FlashMessages';
 
 /**
  * Layout principal pour l'espace portail de l'entreprise cliente.
@@ -38,6 +39,7 @@ export default function PortalLayout({ auth, title, organization, children }) {
     return (
         <>
             {title && <Head title={title} />}
+            <FlashMessages />
 
             <div className="portal-app">
                 {/* 1. EN-TÊTE SUPÉRIEUR FIXE (Logo, Nom, Rôle vert & Déconnexion) */}

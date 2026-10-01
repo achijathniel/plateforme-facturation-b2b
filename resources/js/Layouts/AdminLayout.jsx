@@ -1,4 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
+import FlashMessages from '../Components/FlashMessages';
 
 /**
  * Layout principal pour les vues de l'espace administration.
@@ -17,6 +18,7 @@ export default function AdminLayout({ auth, title, children }) {
     return (
         <>
             {title && <Head title={title} />}
+            <FlashMessages />
 
             <div className="admin-layout">
                 {/* Barre de navigation supérieure sobre en blanc */}
