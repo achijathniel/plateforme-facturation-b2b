@@ -92,6 +92,21 @@ Pour toute création ou modification d'endpoints d'API :
 - **Interdiction formelle d'exécuter `npm run build` en cours de développement :** L'utilisateur exécute lui-même `npm run dev` en continu dans son terminal pour bénéficier du rechargement à chaud instantané (HMR).
 - Ne jamais lancer `npm run build` pour appliquer ou vérifier des modifications de composants React ou de fichiers CSS natifs. Le build de production est strictement réservé à la livraison finale du projet.
 
+## Règle Absolue de Factorisation & Réutilisation Frontend (DRY Strict)
+
+1. **Audit préalable obligatoire avant toute création :**
+   - Avant de créer une nouvelle page ou vue, l'agent DOIT obligatoirement explorer `resources/js/Components/` et `resources/js/Hooks/`.
+   - **Interdiction formelle de réécrire du code déjà existant** : si un formulaire, un tableau, une carte statistique, un badge, un contrôle utilisateur ou un élément de navigation existe déjà, l'agent a l'obligation de le réutiliser.
+
+2. **Règle des 2 occurrences (Factorisation réflexe) :**
+   - Dès qu'une logique ou un bloc JSX est requis à 2 endroits (ex: Création et Édition d'une entité, formulaires de connexion, barres d'actions), l'agent DOIT extraire un composant partagé configurable (`InvoiceForm`, `LoginForm`, `UserControls`, etc.).
+   - Les pages conteneurs (`Pages/**`) doivent rester des "Skinny Pages" (idéalement moins de 50 lignes) dédiées uniquement à l'orchestration des données Inertia.
+
+3. **Respect strict des contrats de composants & props :**
+   - Ne jamais inventer de nouvelles props sur un composant existant sans vérifier sa signature préalable.
+   - Privilégier l'extension via composition ou props optionnelles plutôt que de dupliquer un composant.
+   - Ne jamais recréer le fichier obsolète `resources/js/app.js`. Conserver l'architecture CSS modulaire (`resources/css/modules/` importés dans `app.css`).
+
 ## Délégation Systématique aux Sous-Agents Spécialisés
 
 - **Règle absolue d'attribution :** Pour toute tâche ou travail demandé par l'utilisateur (analyse, développement frontend React, logique backend Laravel, requêtes base de données, tests, accessibilité, optimisation), attribuer et déléguer systématiquement l'exécution au sous-agent spécialisé correspondant via `invoke_subagent` :
