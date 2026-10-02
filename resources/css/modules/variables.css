@@ -1,0 +1,54 @@
+/* ==========================================================================
+   1. VARIABLES GLOBALES & SYSTÈME DE DESIGN NATIF
+   ========================================================================== */
+:root {
+    /* Couleurs de fond */
+    --bg-page: #f8fafc;
+    --bg-surface: #ffffff;
+    --bg-surface-hover: #f1f5f9;
+
+    /* Typographie : Écritures noires & ardoise */
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-muted: #64748b;
+    --text-inverted: #ffffff;
+
+    /* Bordures & Liserés */
+    --border-light: #e2e8f0;
+    --border-subtle: #cbd5e1;
+
+    /* Touches de Bleu Institutionnel & Essentiel */
+    --blue-primary: #2563eb;
+    --blue-hover: #1d4ed8;
+    --blue-border: #93c5fd;
+    --blue-border-subtle: #bfdbfe;
+    --blue-bg-light: #eff6ff;
+    --blue-subtle: #eff6ff;
+    --blue-ring: rgba(37, 99, 235, 0.18);
+
+    /* Statuts */
+    --green-text: #166534;
+    --green-bg: #dcfce7;
+    --green-border: #86efac;
+
+    --rose-text: #9f1239;
+    --rose-bg: #ffe4e6;
+    --rose-border: #fca5a5;
+
+    --amber-text: #92400e;
+    --amber-bg: #fef3c7;
+    --amber-border: #fcd34d;
+
+    /* Ombres & Rayons */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-full: 9999px;
+
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+
+    --transition: all 0.15s ease-in-out;
+}
+

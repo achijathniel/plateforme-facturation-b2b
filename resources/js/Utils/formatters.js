@@ -1,16 +1,19 @@
 /**
- * Formate un montant financier avec séparateur de milliers pour la devise XOF / FCFA.
- * Exemple: 142850000 -> "142 850 000"
+ * Formate un montant financier avec séparateur de milliers pour la devise XOF / FCFA ou autre devise.
+ * Exemple: 142850000 -> "142 850 000", ou (142850000, "XOF") -> "142 850 000 XOF"
  *
  * @param {number|string} amount
+ * @param {string|null} [currency]
  * @returns {string}
  */
-export const formatCurrency = (amount) => {
+export const formatCurrency = (amount, currency = null) => {
     const num = parseFloat(amount) || 0;
-    return new Intl.NumberFormat('fr-FR', {
+    const formatted = new Intl.NumberFormat('fr-FR', {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
     }).format(num);
+
+    return currency ? `${formatted} ${currency}` : formatted;
 };
 
 /**

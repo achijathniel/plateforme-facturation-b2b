@@ -1,0 +1,437 @@
+/* ==========================================================================
+   4. STRUCTURE DE L'ESPACE ADMINISTRATEUR
+   ========================================================================== */
+.admin-layout {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-page);
+}
+
+.admin-header {
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-light);
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    box-shadow: var(--shadow-sm);
+}
+
+.admin-header-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    height: 64px;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.admin-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    transition: var(--transition);
+}
+
+.admin-nav-link:hover {
+    color: var(--blue-primary);
+    background-color: var(--blue-bg-light);
+}
+
+.admin-nav-link.active {
+    color: var(--blue-primary);
+    background-color: var(--blue-bg-light);
+    border-color: var(--blue-border-subtle);
+}
+
+.admin-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.admin-brand-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    background-color: var(--blue-bg-light);
+    border: 1px solid var(--blue-border-subtle);
+    border-radius: var(--radius-sm);
+    font-size: 18px;
+}
+
+.admin-brand-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.admin-brand-subtitle {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.admin-user-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.admin-profile {
+    text-align: right;
+}
+
+.admin-user-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.admin-user-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--blue-primary);
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.admin-status-dot {
+    color: #10b981;
+    font-size: 10px;
+}
+
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-secondary:hover {
+    border-color: #fca5a5;
+    color: #e11d48;
+    background-color: #fff1f2;
+}
+
+/* ==========================================================================
+   5. CONTENU DU TABLEAU DE BORD (DASHBOARD)
+   ========================================================================== */
+.admin-main {
+    max-width: 1280px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 32px 24px;
+}
+
+.admin-banner {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-left: 4px solid var(--blue-primary); /* Liseré bleu essentiel */
+    border-radius: var(--radius-md);
+    padding: 24px 28px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+}
+
+.admin-banner-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--blue-primary);
+    background-color: var(--blue-bg-light);
+    border: 1px solid var(--blue-border-subtle);
+    border-radius: var(--radius-full);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.admin-banner-heading {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.admin-banner-text {
+    margin-top: 6px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    max-width: 700px;
+}
+
+/* Grille des Métriques Financières */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+@media (max-width: 1024px) {
+    .metrics-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .metrics-grid {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+}
+
+.metric-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 20px 16px;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+
+.metric-card:hover {
+    border-color: var(--blue-border);
+    box-shadow: var(--shadow-md);
+}
+
+.metric-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.metric-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.metric-icon-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    background-color: var(--blue-bg-light);
+    border: 1px solid var(--blue-border-subtle);
+    font-size: 15px;
+}
+
+.metric-value {
+    font-size: clamp(22px, 1.8vw, 26px);
+    font-weight: 800;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.metric-currency {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--blue-primary);
+    margin-left: 4px;
+}
+
+.metric-subtext {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.metric-subtext.highlight-blue {
+    color: var(--blue-primary);
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   6. TABLEAUX DE DONNÉES & BADGES DE STATUT (DESIGN SOBRE & CLAIR)
+   ========================================================================== */
+.data-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.data-card-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.data-card-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.data-card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.data-card-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.data-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 13px;
+}
+
+.data-table th {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-secondary);
+    font-weight: 600;
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--border-light);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.data-table td {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.data-table tbody tr {
+    transition: var(--transition);
+}
+
+.data-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.table-code {
+    font-family: monospace;
+    font-weight: 600;
+    color: var(--blue-primary);
+    background-color: var(--blue-bg-light);
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--blue-border-subtle);
+}
+
+.table-amount {
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.table-currency {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-left: 4px;
+}
+
+/* Badges de Statuts */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.badge-paid {
+    background-color: var(--green-bg);
+    color: var(--green-text);
+    border: 1px solid var(--green-border);
+}
+.badge-paid .badge-dot {
+    background-color: #10b981;
+}
+
+.badge-overdue {
+    background-color: var(--rose-bg);
+    color: var(--rose-text);
+    border: 1px solid var(--rose-border);
+}
+.badge-overdue .badge-dot {
+    background-color: #f43f5e;
+}
+
+.badge-sent {
+    background-color: var(--blue-bg-light);
+    color: var(--blue-hover);
+    border: 1px solid var(--blue-border-subtle);
+}
+.badge-sent .badge-dot {
+    background-color: var(--blue-primary);
+}
+
+.badge-draft {
+    background-color: #f1f5f9;
+    color: var(--text-muted);
+    border: 1px solid var(--border-light);
+}
+.badge-draft .badge-dot {
+    background-color: var(--text-muted);
+}
+

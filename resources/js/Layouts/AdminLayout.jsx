@@ -1,5 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import FlashMessages from '../Components/FlashMessages';
+import UserControls from '../Components/UserControls';
 
 /**
  * Layout principal pour les vues de l'espace administration.
@@ -55,23 +56,7 @@ export default function AdminLayout({ auth, title, children }) {
                         </nav>
 
                         {/* Profil connecté & Déconnexion */}
-                        <div className="admin-user-controls">
-                            <div className="admin-profile">
-                                <p className="admin-user-name">{auth?.user?.name}</p>
-                                <p className="admin-user-badge">
-                                    <span className="admin-status-dot">●</span> {auth?.user?.role?.toUpperCase()}
-                                </p>
-                            </div>
-
-                            <Link
-                                href="/admin/logout"
-                                method="post"
-                                as="button"
-                                className="btn-secondary"
-                            >
-                                Déconnexion
-                            </Link>
-                        </div>
+                        <UserControls auth={auth} logoutUrl="/admin/logout" />
                     </div>
                 </header>
 

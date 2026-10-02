@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import FlashMessages from '../Components/FlashMessages';
+import UserControls from '../Components/UserControls';
 
 /**
  * Layout principal pour l'espace portail de l'entreprise cliente.
@@ -18,19 +19,27 @@ export default function PortalLayout({ auth, title, organization, children }) {
     const { url } = usePage();
     const orgName = organization?.name || auth?.user?.organization?.name || 'Mon Entreprise';
 
-    // État mémorisé pour plier / déplier la barre latérale
-    const [isCollapsed, setIsCollapsed] = useState(() => {
-        if (typeof window !== 'undefined') {
-            return localStorage.getItem('dealtoo_portal_sidebar_collapsed') === 'true';
+    // État mémorisé pour plier / déplier la barre latérale (sécurisé contre les erreurs d'hydratation SSR)
+    const [isCollapsed, setIsCollapsed] = useState(false);
+
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem('dealtoo_portal_sidebar_collapsed');
+            if (saved !== null) {
+                setIsCollapsed(saved === 'true');
+            }
+        } catch {
+            // Mode incognito ou restrictions d'accès au stockage local
         }
-        return false;
-    });
+    }, []);
 
     const toggleSidebar = () => {
         setIsCollapsed((prev) => {
             const next = !prev;
-            if (typeof window !== 'undefined') {
+            try {
                 localStorage.setItem('dealtoo_portal_sidebar_collapsed', String(next));
+            } catch {
+                // Ignore
             }
             return next;
         });
@@ -58,23 +67,7 @@ export default function PortalLayout({ auth, title, organization, children }) {
                         </div>
 
                         {/* Profil connecté & Déconnexion */}
-                        <div className="admin-user-controls">
-                            <div className="admin-profile">
-                                <p className="admin-user-name">{auth?.user?.name}</p>
-                                <p className="admin-user-badge">
-                                    <span className="admin-status-dot">●</span> {auth?.user?.role?.toUpperCase()}
-                                </p>
-                            </div>
-
-                            <Link
-                                href="/portal/logout"
-                                method="post"
-                                as="button"
-                                className="btn-secondary"
-                            >
-                                Déconnexion
-                            </Link>
-                        </div>
+                        <UserControls auth={auth} logoutUrl="/portal/logout" />
                     </div>
                 </header>
 

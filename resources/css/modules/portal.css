@@ -1,0 +1,239 @@
+/* ==========================================================================
+   8. PORTAIL ENTREPRISE / COMPTABILITÉ (SIDEBAR RÉTRACTABLE GAUCHE)
+   ========================================================================== */
+
+.portal-app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-body);
+}
+
+.portal-header-top {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.portal-layout-body {
+    display: flex;
+    flex: 1;
+    min-height: calc(100vh - 64px);
+    width: 100%;
+}
+
+/* Barre latérale gauche (Sidebar) */
+.portal-sidebar {
+    width: 250px;
+    background-color: var(--bg-surface);
+    border-right: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: sticky;
+    top: 64px;
+    height: calc(100vh - 64px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 30;
+}
+
+.portal-sidebar.collapsed {
+    width: 68px;
+}
+
+/* Ligne bouton de bascule Plier / Déplier */
+.portal-sidebar-toggle-row {
+    padding: 12px 14px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.portal-sidebar.collapsed .portal-sidebar-toggle-row {
+    justify-content: center;
+    padding: 12px 8px;
+}
+
+.btn-portal-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-portal-toggle:hover {
+    color: var(--blue-primary);
+    border-color: var(--blue-border);
+    background-color: var(--blue-bg-light);
+}
+
+.toggle-icon {
+    font-size: 10px;
+    display: inline-block;
+}
+
+.toggle-label {
+    font-size: 11px;
+}
+
+/* Zone d'action rapide : Créer une facture */
+.portal-sidebar-action-box {
+    padding: 14px 14px 10px;
+}
+
+.portal-sidebar.collapsed .portal-sidebar-action-box {
+    padding: 14px 10px 10px;
+    display: flex;
+    justify-content: center;
+}
+
+.btn-action-new-invoice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background-color: var(--blue-primary);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: var(--transition);
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.2);
+    white-space: nowrap;
+}
+
+.btn-action-new-invoice:hover {
+    background-color: var(--blue-hover);
+    box-shadow: 0 2px 5px rgba(37, 99, 235, 0.3);
+}
+
+.portal-sidebar.collapsed .btn-action-new-invoice {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: var(--radius-sm);
+}
+
+.action-icon {
+    font-size: 13px;
+}
+
+.action-label {
+    font-size: 13px;
+}
+
+/* Navigation latérale */
+.portal-sidebar-nav {
+    flex: 1;
+    padding: 10px 10px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.portal-nav-group {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.portal-nav-group-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    padding: 0 10px 4px;
+}
+
+.portal-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.portal-nav-link:hover:not(.disabled) {
+    color: var(--blue-primary);
+    background-color: var(--blue-bg-light);
+    border-color: var(--blue-border-subtle);
+}
+
+.portal-nav-link.active {
+    color: var(--blue-primary);
+    background-color: var(--blue-bg-light);
+    border-color: var(--blue-border-subtle);
+    font-weight: 700;
+}
+
+.portal-nav-link.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.portal-sidebar.collapsed .portal-nav-link {
+    justify-content: center;
+    padding: 0;
+    width: 44px;
+    height: 44px;
+    margin: 0 auto;
+}
+
+.portal-nav-icon {
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.portal-nav-text {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.badge-coming-soon {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    background-color: #f1f5f9;
+    color: var(--text-muted);
+    border-radius: 4px;
+    margin-left: 6px;
+}
+
+/* Zone de contenu principale à droite */
+.portal-content-main {
+    flex: 1;
+    padding: 32px 28px;
+    max-width: 1280px;
+    min-width: 0;
+    margin: 0 auto;
+    width: 100%;
+}
+
