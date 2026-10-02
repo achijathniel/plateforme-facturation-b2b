@@ -61,7 +61,7 @@ export default function Dashboard({ auth, organization, stats }) {
                     currency="XOF"
                     icon="✅"
                     subtext="Paiements confirmés"
-                    isPositive={true}
+                    valueColor="var(--green-text)"
                 />
 
                 <MetricCard
@@ -70,7 +70,7 @@ export default function Dashboard({ auth, organization, stats }) {
                     currency="XOF"
                     icon="⚠️"
                     subtext="Montant en attente de règlement"
-                    isOverdue={true}
+                    valueColor="var(--rose-text)"
                 />
 
                 <MetricCard
@@ -110,6 +110,14 @@ export default function Dashboard({ auth, organization, stats }) {
                                     <tr
                                         key={invoice.id || invoice.invoice_number}
                                         className="clickable-row"
+                                        tabIndex={0}
+                                        role="link"
+                                        aria-label={`Consulter la facture numéro ${invoice.invoice_number}`}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && invoice.id) {
+                                                router.visit(`/portal/invoices/${invoice.id}`);
+                                            }
+                                        }}
                                         onClick={(e) => {
                                             const selection = window.getSelection();
                                             if (selection && selection.toString().length > 0) {

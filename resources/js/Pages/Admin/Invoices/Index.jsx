@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { router } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import StatusBadge from '../../../Components/StatusBadge';
 import Pagination from '../../../Components/Pagination';
 import { formatCurrency } from '../../../Utils/formatters';
+import useDebounce from '../../../Hooks/useDebounce';
 
 /**
  * Vue principale de gestion et consultation des factures administratives.
@@ -29,10 +30,12 @@ import { formatCurrency } from '../../../Utils/formatters';
  *     organizations: Array<{ id: number, name: string }>
  * }} props
  */
-export default function InvoicesIndex({ auth, invoices, filters, statuses, organizations }) {
+export default function InvoicesIndex({ auth, invoices, filters = {}, statuses = [], organizations = [] }) {
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
     const [organizationId, setOrganizationId] = useState(filters.organization_id || '');
+    const isFirstRender = useRef(true);
+    const debouncedSearch = useDebounce(search, 350);
 
     // Synchronisation de l'état local lors des retours en arrière/avant du navigateur
     useEffect(() => {
@@ -40,6 +43,18 @@ export default function InvoicesIndex({ auth, invoices, filters, statuses, organ
         setStatus(filters.status || '');
         setOrganizationId(filters.organization_id || '');
     }, [filters.search, filters.status, filters.organization_id]);
+
+    // Filtrage réactif dès que la valeur de recherche temporisée change
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+
+        if (debouncedSearch !== (filters.search || '')) {
+            applyFilters({ search: debouncedSearch });
+        }
+    }, [debouncedSearch]);
 
     /**
      * Déclenche la recherche ou le filtrage avec conservation d'état Inertia.

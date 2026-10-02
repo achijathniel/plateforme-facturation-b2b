@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, router } from '@inertiajs/react';
 import PortalLayout from '../../../Layouts/PortalLayout';
 import StatusBadge from '../../../Components/StatusBadge';
 import Pagination from '../../../Components/Pagination';
 import { formatCurrency } from '../../../Utils/formatters';
+import useDebounce from '../../../Hooks/useDebounce';
 
 /**
  * Vue de consultation et de recherche des factures de l'espace comptable.
@@ -37,12 +38,26 @@ const dateFormatter = new Intl.DateTimeFormat('fr-FR', {
 export default function Index({ auth, organization, invoices, filters = {}, statuses = [] }) {
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
+    const isFirstRender = useRef(true);
+    const debouncedSearch = useDebounce(search, 350);
 
     // Synchronisation de l'état local avec les retours historiques ou props
     useEffect(() => {
         setSearch(filters.search || '');
         setStatus(filters.status || '');
     }, [filters.search, filters.status]);
+
+    // Filtrage réactif dès que la valeur de recherche temporisée change
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+
+        if (debouncedSearch !== (filters.search || '')) {
+            applyFilters({ search: debouncedSearch });
+        }
+    }, [debouncedSearch]);
 
     /**
      * Applique les filtres avec conservation d'état Inertia (sans rechargement complet).
@@ -229,6 +244,14 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
                                     <tr
                                         key={invoice.id}
                                         className="clickable-row"
+                                        tabIndex={0}
+                                        role="link"
+                                        aria-label={`Consulter la facture numéro ${invoice.invoice_number}`}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                router.visit(`/portal/invoices/${invoice.id}`);
+                                            }
+                                        }}
                                         onClick={(e) => {
                                             const selection = window.getSelection();
                                             if (selection && selection.toString().length > 0) {

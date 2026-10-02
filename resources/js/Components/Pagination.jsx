@@ -47,6 +47,13 @@ export default function Pagination({ links, from, to, total }) {
                             link.label.includes('&laquo;') ||
                             link.label.includes('&raquo;');
 
+                        const labelText = cleanLabel(link.label);
+                        const ariaLabel = link.active
+                            ? `Page ${labelText}, page actuelle`
+                            : isNavButton
+                                ? labelText
+                                : `Aller à la page ${labelText}`;
+
                         return (
                             <li key={index} className="pagination-item">
                                 {link.url ? (
@@ -56,15 +63,17 @@ export default function Pagination({ links, from, to, total }) {
                                         preserveState
                                         className={`pagination-link ${link.active ? 'active' : ''} ${isNavButton ? 'nav-button' : ''}`}
                                         aria-current={link.active ? 'page' : undefined}
+                                        aria-label={ariaLabel}
                                     >
-                                        {cleanLabel(link.label)}
+                                        {labelText}
                                     </Link>
                                 ) : (
                                     <span
                                         className={`pagination-link disabled ${isNavButton ? 'nav-button' : ''}`}
                                         aria-disabled="true"
+                                        aria-label={isNavButton ? labelText : `Page ${labelText} indisponible`}
                                     >
-                                        {cleanLabel(link.label)}
+                                        {labelText}
                                     </span>
                                 )}
                             </li>
