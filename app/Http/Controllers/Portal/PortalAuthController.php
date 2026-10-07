@@ -21,7 +21,7 @@ final class PortalAuthController extends Controller
      */
     public function create(): Response|RedirectResponse
     {
-        if (Auth::check() && in_array(Auth::user()->role, [UserRole::ACCOUNTANT, UserRole::CLIENT], true)) {
+        if (Auth::check() && Auth::user()->isPortalUser()) {
             return redirect()->route('portal.dashboard');
         }
 
@@ -44,8 +44,8 @@ final class PortalAuthController extends Controller
 
         $user = Auth::user();
 
-        // Sécurité Multi-Tenancy : L'utilisateur doit être Comptable ou Client avec une organisation rattachée
-        if (! in_array($user->role, [UserRole::ACCOUNTANT, UserRole::CLIENT], true) || ! $user->organization_id) {
+        // Sécurité Multi-Tenancy : L'utilisateur doit appartenir à une entreprise avec un rôle portail valide
+        if (! $user->isPortalUser()) {
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

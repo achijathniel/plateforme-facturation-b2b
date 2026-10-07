@@ -11,6 +11,7 @@ services:
     volumes:
       - ./:/var/www/html
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+      - php_vendor:/var/www/html/vendor
     networks:
       - backend_network
     depends_on:
@@ -28,6 +29,7 @@ services:
     volumes:
       - ./:/var/www/html
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+      - php_vendor:/var/www/html/vendor
     networks:
       - backend_network
     depends_on:
@@ -101,6 +103,8 @@ volumes:
   pgdata:
     driver: local
   redisdata:
+    driver: local
+  php_vendor:
     driver: local
 
 networks:

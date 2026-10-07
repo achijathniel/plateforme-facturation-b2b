@@ -75,16 +75,16 @@ class InvoiceCreationTest extends TestCase
     }
 
     /**
-     * Test 2 : Sécurité RBAC - Un client ne peut pas créer de facture (HTTP 403).
+     * Test 2 : Sécurité RBAC - Un collaborateur ne peut pas créer de facture (HTTP 403).
      */
-    public function test_client_cannot_create_invoice(): void
+    public function test_collaborator_cannot_create_invoice(): void
     {
         $org = Organization::factory()->create();
-        $client = User::factory()->create([
+        $collaborator = User::factory()->create([
             'organization_id' => $org->id,
-            'role'            => UserRole::CLIENT,
+            'role'            => UserRole::COLLABORATOR,
         ]);
-        $token = $client->createToken('client-token')->plainTextToken;
+        $token = $collaborator->createToken('collaborator-token')->plainTextToken;
 
         $payload = [
             'due_date' => now()->addDays(15)->toDateString(),

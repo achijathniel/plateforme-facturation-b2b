@@ -29,7 +29,7 @@ class AdminDashboardTest extends TestCase
         $organization = Organization::factory()->create();
         $user = User::factory()->create([
             'organization_id' => $organization->id,
-            'role'            => UserRole::CLIENT,
+            'role'            => UserRole::COLLABORATOR,
         ]);
 
         $response = $this->actingAs($user)->get(route('admin.dashboard'));

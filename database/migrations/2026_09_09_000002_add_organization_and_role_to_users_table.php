@@ -20,7 +20,7 @@ return new class extends Migration
                   ->nullOnDelete();
 
             $table->string('role')
-                  ->default(UserRole::CLIENT->value)
+                  ->default('collaborator')
                   ->after('email');
         });
     }

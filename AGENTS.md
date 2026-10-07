@@ -87,6 +87,27 @@ Pour toute création ou modification d'endpoints d'API :
    - **Consultation générale (`/api/*`) :** Quotas par utilisateur authentifié (`$request->user()->id`) et par IP pour les invités.
 3. **Application explicite sur les routes :** Attacher systématiquement le middleware `throttle:<nom-de-la-regle>` sur les groupes de routes correspondants dans `routes/api.php`.
 
+## Règle d'Exécution des Tests en Développement (Tests Ultra-Ciblés)
+
+- **Interdiction formelle d'exécuter la suite complète de tests en cours de développement :** Ne jamais lancer `php artisan test` globalement lors d'itérations, de retouches de code ou de vérifications intermédiaires (perte de temps liée au montage Windows/Docker).
+- **Obligation de ciblage strict (`--filter`) :** L'agent DOIT toujours cibler la classe ou la méthode exacte en cours d'édition :
+  ```bash
+  docker exec backend_app php artisan test --filter <NomDuTest>
+  ```
+- L'exécution de la suite complète est strictement réservée au contrôle final unique avant livraison d'un jalon complet (pour le commit/push Git).
+
+## Règle de Gestion des Dépendances Composer (Volume Dédié Docker)
+
+- Le dossier `vendor/` est isolé dans un volume Docker interne dédié (`php_vendor`) pour éliminer toute latence d'I/O Windows.
+- **Obligation formelle pour toute installation de package PHP :** Ne jamais lancer `composer` sur l'hôte Windows. L'agent DOIT obligatoirement exécuter les commandes d'installation dans le conteneur applicatif :
+  ```bash
+  docker compose exec app composer require <nom-du-package>
+  ```
+- Pour les dépendances de développement :
+  ```bash
+  docker compose exec app composer require <nom-du-package> --dev
+  ```
+
 ## Règle de Développement Frontend (Vite & Assets)
 
 - **Interdiction formelle d'exécuter `npm run build` en cours de développement :** L'utilisateur exécute lui-même `npm run dev` en continu dans son terminal pour bénéficier du rechargement à chaud instantané (HMR).

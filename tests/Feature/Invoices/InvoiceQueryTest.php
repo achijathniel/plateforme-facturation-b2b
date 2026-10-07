@@ -75,11 +75,11 @@ class InvoiceQueryTest extends TestCase
 
         InvoiceItem::factory()->count(2)->create(['invoice_id' => $invoice->id]);
 
-        $client = User::factory()->create([
+        $collaborator = User::factory()->create([
             'organization_id' => $org->id,
-            'role'            => UserRole::CLIENT,
+            'role'            => UserRole::COLLABORATOR,
         ]);
-        $token = $client->createToken('client-token')->plainTextToken;
+        $token = $collaborator->createToken('collaborator-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', "Bearer {$token}")
             ->getJson("/api/invoices/{$invoice->id}");
@@ -104,7 +104,7 @@ class InvoiceQueryTest extends TestCase
 
         $userOrgA = User::factory()->create([
             'organization_id' => $orgA->id,
-            'role'            => UserRole::CLIENT,
+            'role'            => UserRole::COLLABORATOR,
         ]);
         $token = $userOrgA->createToken('orgA-token')->plainTextToken;
 

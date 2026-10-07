@@ -42,4 +42,45 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    /**
+     * Utilisateur avec le rôle DIRECTEUR.
+     */
+    public function director(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => \App\Enums\UserRole::DIRECTOR,
+        ]);
+    }
+
+    /**
+     * Utilisateur avec le rôle COMPTABLE.
+     */
+    public function accountant(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => \App\Enums\UserRole::ACCOUNTANT,
+        ]);
+    }
+
+    /**
+     * Utilisateur avec le rôle COLLABORATEUR.
+     */
+    public function collaborator(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => \App\Enums\UserRole::COLLABORATOR,
+        ]);
+    }
+
+    /**
+     * Utilisateur avec le rôle ADMINISTRATEUR.
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => \App\Enums\UserRole::ADMIN,
+        ]);
+    }
 }
+

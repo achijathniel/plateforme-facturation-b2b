@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
 use App\Enums\InvoiceStatus;
@@ -41,18 +43,19 @@ class InvoicePolicy
 
     /**
      * Détermine si l'utilisateur peut créer une facture.
-     * Règle RBAC : Un client ne peut pas créer de facture, seul le Comptable le peut.
+     * Règle RBAC : Le Directeur et le Comptable peuvent créer une facture. Le Collaborateur est en lecture seule.
      */
     public function create(User $user): bool
     {
-        return $user->role === UserRole::ACCOUNTANT && $user->organization_id !== null;
+        return in_array($user->role, [UserRole::DIRECTOR, UserRole::ACCOUNTANT], true)
+            && $user->organization_id !== null;
     }
 
     /**
      * Détermine si l'utilisateur peut modifier une facture.
      * Règles :
      * 1. Multi-tenancy : Même entreprise.
-     * 2. RBAC : Comptable uniquement.
+     * 2. RBAC : Directeur ou Comptable.
      * 3. Intégrité comptable : Impossible de modifier une facture déjà payée ou annulée.
      */
     public function update(User $user, Invoice $invoice): bool
@@ -61,7 +64,7 @@ class InvoicePolicy
             return false;
         }
 
-        return $user->role === UserRole::ACCOUNTANT
+        return in_array($user->role, [UserRole::DIRECTOR, UserRole::ACCOUNTANT], true)
             && $user->organization_id === $invoice->organization_id;
     }
 
@@ -75,7 +78,18 @@ class InvoicePolicy
             return false;
         }
 
-        return $user->role === UserRole::ACCOUNTANT
+        return in_array($user->role, [UserRole::DIRECTOR, UserRole::ACCOUNTANT], true)
+            && $user->organization_id === $invoice->organization_id;
+    }
+
+    /**
+     * Détermine si l'utilisateur peut valider/approuver une facture.
+     * Règle RBAC : Réservé au Directeur Général de l'entreprise propriétaire.
+     */
+    public function approve(User $user, Invoice $invoice): bool
+    {
+        return $user->role === UserRole::DIRECTOR
             && $user->organization_id === $invoice->organization_id;
     }
 }
+

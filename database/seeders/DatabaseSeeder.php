@@ -31,34 +31,59 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 2. Création de 5 entreprises clientes réalistes
-        $organizations = Organization::factory()->count(5)->create();
+        // 2. Récupération ou création de 5 entreprises clientes
+        $organizations = Organization::all();
+        if ($organizations->isEmpty()) {
+            $organizations = Organization::factory()->count(5)->create();
+        }
 
         foreach ($organizations as $index => $org) {
-            // Création d'un comptable et d'un client par entreprise
-            User::create([
-                'organization_id' => $org->id,
-                'name'            => "Comptable " . $org->name,
-                'email'           => "comptable{$index}@dealtoo.com",
-                'password'        => Hash::make('password'),
-                'role'            => UserRole::ACCOUNTANT,
-            ]);
+            // 1. Création ou mise à jour du Directeur Général
+            User::updateOrCreate(
+                ['email' => "directeur{$index}@dealtoo.com"],
+                [
+                    'organization_id' => $org->id,
+                    'name'            => "Directeur " . $org->name,
+                    'password'        => Hash::make('password'),
+                    'role'            => UserRole::DIRECTOR,
+                ]
+            );
 
-            User::create([
-                'organization_id' => $org->id,
-                'name'            => "Responsable " . $org->name,
-                'email'           => "client{$index}@dealtoo.com",
-                'password'        => Hash::make('password'),
-                'role'            => UserRole::CLIENT,
-            ]);
+            // 2. Création ou mise à jour du Comptable
+            User::updateOrCreate(
+                ['email' => "comptable{$index}@dealtoo.com"],
+                [
+                    'organization_id' => $org->id,
+                    'name'            => "Comptable " . $org->name,
+                    'password'        => Hash::make('password'),
+                    'role'            => UserRole::ACCOUNTANT,
+                ]
+            );
+
+            // 3. Création ou mise à jour du Collaborateur interne
+            User::updateOrCreate(
+                ['email' => "collaborateur{$index}@dealtoo.com"],
+                [
+                    'organization_id' => $org->id,
+                    'name'            => "Collaborateur " . $org->name,
+                    'password'        => Hash::make('password'),
+                    'role'            => UserRole::COLLABORATOR,
+                ]
+            );
 
             // Création de 4 factures par entreprise avec différents statuts
             $statuses = [InvoiceStatus::PAID, InvoiceStatus::SENT, InvoiceStatus::OVERDUE, InvoiceStatus::DRAFT];
 
             foreach ($statuses as $statusIndex => $status) {
+                $invoiceNumber = sprintf("INV-2026-%02d%02d", $org->id, $statusIndex + 1);
+
+                if (Invoice::where('invoice_number', $invoiceNumber)->exists()) {
+                    continue;
+                }
+
                 $invoice = Invoice::create([
                     'organization_id' => $org->id,
-                    'invoice_number'  => sprintf("INV-2026-%02d%02d", $org->id, $statusIndex + 1),
+                    'invoice_number'  => $invoiceNumber,
                     'status'          => $status,
                     'issue_date'      => now()->subDays(rand(10, 60))->toDateString(),
                     'due_date'        => now()->addDays(rand(5, 30))->toDateString(),

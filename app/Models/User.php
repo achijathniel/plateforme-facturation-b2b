@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -41,4 +43,45 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Organization::class);
     }
+
+    /**
+     * Vérifie si l'utilisateur est un Administrateur global de la plateforme.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === UserRole::ADMIN;
+    }
+
+    /**
+     * Vérifie si l'utilisateur est le Directeur Général / Chef d'entreprise.
+     */
+    public function isDirector(): bool
+    {
+        return $this->role === UserRole::DIRECTOR;
+    }
+
+    /**
+     * Vérifie si l'utilisateur est un Comptable de l'entreprise.
+     */
+    public function isAccountant(): bool
+    {
+        return $this->role === UserRole::ACCOUNTANT;
+    }
+
+    /**
+     * Vérifie si l'utilisateur est un Collaborateur interne de l'entreprise.
+     */
+    public function isCollaborator(): bool
+    {
+        return $this->role === UserRole::COLLABORATOR;
+    }
+
+    /**
+     * Vérifie si l'utilisateur est rattaché à une organisation avec un rôle portail valide.
+     */
+    public function isPortalUser(): bool
+    {
+        return $this->organization_id !== null && ($this->role?->isPortalRole() ?? false);
+    }
 }
+

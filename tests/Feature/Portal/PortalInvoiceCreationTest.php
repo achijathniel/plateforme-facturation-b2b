@@ -41,17 +41,17 @@ final class PortalInvoiceCreationTest extends TestCase
     }
 
     /**
-     * Test 2 : Un utilisateur ayant le rôle CLIENT ne peut pas accéder au formulaire de création (HTTP 403).
+     * Test 2 : Un utilisateur ayant le rôle COLLABORATEUR ne peut pas accéder au formulaire de création (HTTP 403).
      */
-    public function test_client_cannot_access_invoice_creation_form(): void
+    public function test_collaborator_cannot_access_invoice_creation_form(): void
     {
         $org = Organization::factory()->create();
-        $client = User::factory()->create([
+        $collaborator = User::factory()->create([
             'organization_id' => $org->id,
-            'role'            => UserRole::CLIENT,
+            'role'            => UserRole::COLLABORATOR,
         ]);
 
-        $response = $this->actingAs($client)->get(route('portal.invoices.create'));
+        $response = $this->actingAs($collaborator)->get(route('portal.invoices.create'));
 
         $response->assertForbidden();
     }

@@ -13,7 +13,7 @@ final class EnsureUserIsPortalUser
 {
     /**
      * Intercepte la requête et s'assure que l'utilisateur connecté appartient à une entreprise
-     * cliente avec un rôle autorisé (ACCOUNTANT ou CLIENT).
+     * avec un rôle portail autorisé (DIRECTOR, ACCOUNTANT, COLLABORATOR).
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
@@ -25,7 +25,7 @@ final class EnsureUserIsPortalUser
             return redirect()->route('portal.login');
         }
 
-        if (! in_array($user->role, [UserRole::ACCOUNTANT, UserRole::CLIENT], true) || ! $user->organization_id) {
+        if (! $user->isPortalUser()) {
             abort(Response::HTTP_FORBIDDEN, 'Accès réservé aux membres des entreprises clientes.');
         }
 
