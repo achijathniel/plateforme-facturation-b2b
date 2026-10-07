@@ -19,6 +19,7 @@ final readonly class UpdateInvoiceDTO
         public ?string $notes,
         public array $items,
         public string $action = 'draft',
+        public ?int $clientId = null,
     ) {}
 
     /**
@@ -36,6 +37,7 @@ final readonly class UpdateInvoiceDTO
         ?string $notes,
         array $items,
         string $action = 'draft',
+        ?int $clientId = null,
     ): self {
         $itemDTOs = array_map(
             fn (array $item) => CreateInvoiceItemDTO::fromArray($item),
@@ -52,6 +54,7 @@ final readonly class UpdateInvoiceDTO
             notes: $notes,
             items: $itemDTOs,
             action: $action,
+            clientId: $clientId,
         );
     }
 }

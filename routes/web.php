@@ -64,6 +64,14 @@ Route::prefix('portal')->name('portal.')->group(function () {
         Route::post('/logout', [PortalAuthController::class, 'destroy'])->name('logout');
         Route::get('/dashboard', fn () => redirect()->route('portal.dashboard'));
 
+        // Annuaire et recherche instantanée de clients B2B
+        Route::get('/clients/search', [\App\Http\Controllers\Portal\PortalClientController::class, 'search'])
+            ->middleware('throttle:web-portal-read')
+            ->name('clients.search');
+        Route::post('/clients', [\App\Http\Controllers\Portal\PortalClientController::class, 'store'])
+            ->middleware('throttle:web-invoice-create')
+            ->name('clients.store');
+
         // Gestion et émission des factures par le comptable
         Route::get('/invoices', [PortalInvoiceController::class, 'index'])
             ->middleware('throttle:web-portal-read')

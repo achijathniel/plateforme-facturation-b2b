@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -47,5 +49,13 @@ class Organization extends Model
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
+    }
+
+    /**
+     * Relation : Une entreprise possède un annuaire de clients B2B destinataires.
+     */
+    public function clients(): HasMany
+    {
+        return $this->hasMany(Client::class);
     }
 }

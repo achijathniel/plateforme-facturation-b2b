@@ -4,17 +4,23 @@ declare(strict_types=1);
 
 namespace App\Actions\Invoices;
 
+use App\DTOs\Clients\ClientDTO;
 use App\DTOs\Invoices\CreateInvoiceDTO;
 use App\Enums\InvoiceStatus;
 use App\Models\Invoice;
+use App\Repositories\Contracts\ClientRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 
-final class CreateInvoiceAction
+final readonly class CreateInvoiceAction
 {
     /**
      * Taux standard de TVA zone UEMOA (18%).
      */
     private const TVA_RATE = '0.18';
+
+    public function __construct(
+        private ClientRepositoryInterface $clientRepository,
+    ) {}
 
     /**
      * Exécute la logique métier de création de facture sous transaction atomique.
@@ -62,9 +68,31 @@ final class CreateInvoiceAction
 
             $invoiceNumber = sprintf('INV-%s-%05d', $year, $nextSequence);
 
-            // 3. Persistance de la facture au statut DRAFT (brouillon vérifiable)
+            // 3. Résolution ou création automatique du client dans l'annuaire de l'organisation
+            $clientId = $dto->clientId;
+            if (! $clientId) {
+                $existingClient = $this->clientRepository->findByName($dto->clientName, $dto->organizationId);
+                if ($existingClient) {
+                    $clientId = $existingClient->id;
+                } else {
+                    $newClient = $this->clientRepository->create(
+                        $dto->organizationId,
+                        new ClientDTO(
+                            name: $dto->clientName,
+                            email: $dto->clientEmail,
+                            phone: $dto->clientPhone,
+                            address: $dto->clientAddress,
+                            taxNumber: $dto->clientTaxNumber,
+                        )
+                    );
+                    $clientId = $newClient->id;
+                }
+            }
+
+            // 4. Persistance de la facture au statut DRAFT (brouillon vérifiable avec snapshot immuable)
             $invoice = Invoice::create([
                 'organization_id'   => $dto->organizationId,
+                'client_id'         => $clientId,
                 'invoice_number'    => $invoiceNumber,
                 'client_name'       => $dto->clientName,
                 'client_email'      => $dto->clientEmail,
@@ -81,12 +109,12 @@ final class CreateInvoiceAction
                 'notes'             => $dto->notes,
             ]);
 
-            // 4. Persistance des lignes d'articles
+            // 5. Persistance des lignes d'articles
             foreach ($itemsData as $data) {
                 $invoice->items()->create($data);
             }
 
-            return $invoice->load(['organization', 'items']);
+            return $invoice->load(['organization', 'items', 'client']);
         });
     }
 }

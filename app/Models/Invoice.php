@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Enums\InvoiceStatus;
@@ -16,6 +18,7 @@ class Invoice extends Model
 
     protected $fillable = [
         'organization_id',
+        'client_id',
         'invoice_number',
         'client_name',
         'client_email',
@@ -48,11 +51,19 @@ class Invoice extends Model
     }
 
     /**
-     * Relation : Une facture appartient à une entreprise cliente.
+     * Relation : Une facture appartient à une entreprise émettrice.
      */
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);
+    }
+
+    /**
+     * Relation : Une facture peut être rattachée à un client de l'annuaire (optionnel).
+     */
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class);
     }
 
     /**

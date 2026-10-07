@@ -8,6 +8,7 @@ use App\DTOs\Invoices\CreateInvoiceDTO;
 use App\Enums\UserRole;
 use App\Models\Invoice;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreInvoiceRequest extends FormRequest
 {
@@ -26,7 +27,18 @@ class StoreInvoiceRequest extends FormRequest
      */
     public function rules(): array
     {
+        $targetOrgId = $this->user()?->role === UserRole::ADMIN && $this->filled('organization_id')
+            ? (int) $this->input('organization_id')
+            : (int) $this->user()?->organization_id;
+
         $rules = [
+            'client_id'           => [
+                'nullable',
+                'integer',
+                Rule::exists('clients', 'id')->where(
+                    fn ($query) => $query->where('organization_id', $targetOrgId)
+                ),
+            ],
             'client_name'         => ['required', 'string', 'max:255'],
             'client_email'        => ['required', 'email', 'max:255'],
             'client_address'      => ['nullable', 'string', 'max:500'],
@@ -57,6 +69,7 @@ class StoreInvoiceRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'client_id.exists'            => 'Le client sélectionné est introuvable ou n\'appartient pas à votre organisation.',
             'client_name.required'        => 'Le nom de l\'entreprise cliente est obligatoire.',
             'client_name.max'             => 'Le nom du client ne peut pas dépasser 255 caractères.',
             'client_email.required'       => 'L\'adresse email de l\'entreprise cliente est obligatoire.',
@@ -86,6 +99,7 @@ class StoreInvoiceRequest extends FormRequest
 
         $notes = $this->validated('notes');
         $items = $this->validated('items');
+        $clientId = $this->filled('client_id') ? (int) $this->validated('client_id') : null;
 
         return CreateInvoiceDTO::fromRequest(
             organizationId: $organizationId,
@@ -97,6 +111,7 @@ class StoreInvoiceRequest extends FormRequest
             dueDate: (string) $this->validated('due_date'),
             notes: is_string($notes) ? $notes : null,
             items: is_array($items) ? $items : [],
+            clientId: $clientId,
         );
     }
 }

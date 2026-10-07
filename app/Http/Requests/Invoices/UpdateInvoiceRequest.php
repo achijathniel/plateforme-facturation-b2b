@@ -7,6 +7,7 @@ namespace App\Http\Requests\Invoices;
 use App\DTOs\Invoices\UpdateInvoiceDTO;
 use App\Models\Invoice;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 final class UpdateInvoiceRequest extends FormRequest
 {
@@ -25,7 +26,16 @@ final class UpdateInvoiceRequest extends FormRequest
      */
     public function rules(): array
     {
+        $organizationId = (int) $this->user()?->organization_id;
+
         return [
+            'client_id'           => [
+                'nullable',
+                'integer',
+                Rule::exists('clients', 'id')->where(
+                    fn ($query) => $query->where('organization_id', $organizationId)
+                ),
+            ],
             'client_name'         => ['required', 'string', 'max:255'],
             'client_email'        => ['required', 'email', 'max:255'],
             'client_address'      => ['nullable', 'string', 'max:500'],
@@ -49,6 +59,7 @@ final class UpdateInvoiceRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'client_id.exists'            => 'Le client sélectionné est introuvable ou n\'appartient pas à votre organisation.',
             'client_name.required'        => 'Le nom de l\'entreprise cliente est obligatoire.',
             'client_email.required'       => 'L\'adresse email de l\'entreprise cliente est obligatoire.',
             'client_email.email'          => 'L\'adresse email du client doit être une adresse valide.',
@@ -70,6 +81,7 @@ final class UpdateInvoiceRequest extends FormRequest
     {
         $notes = $this->validated('notes');
         $items = $this->validated('items');
+        $clientId = $this->filled('client_id') ? (int) $this->validated('client_id') : null;
 
         return UpdateInvoiceDTO::fromRequest(
             clientName: (string) $this->validated('client_name'),
@@ -81,6 +93,7 @@ final class UpdateInvoiceRequest extends FormRequest
             notes: is_string($notes) ? $notes : null,
             items: is_array($items) ? $items : [],
             action: (string) ($this->validated('action') ?? 'draft'),
+            clientId: $clientId,
         );
     }
 }

@@ -372,3 +372,104 @@
     box-shadow: 0 3px 6px rgba(37, 99, 235, 0.35);
 }
 
+/* ==========================================================================
+   AUTOCOMPLÉTION & RECHERCHE CLIENT B2B
+   ========================================================================== */
+
+.client-autocomplete-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.client-autocomplete-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background-color: #ffffff;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    z-index: 50;
+    max-height: 260px;
+    overflow-y: auto;
+    list-style: none;
+    margin: 0;
+    padding: 4px 0;
+}
+
+.client-autocomplete-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background-color 0.15s ease;
+}
+
+.client-autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.client-autocomplete-item:hover,
+.client-autocomplete-item:focus,
+.client-autocomplete-item.highlighted {
+    background-color: #f1f5f9;
+    outline: none;
+}
+
+.client-autocomplete-item.selected {
+    background-color: #eff6ff;
+}
+
+.client-autocomplete-item-name {
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.client-autocomplete-item-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.client-autocomplete-empty {
+    padding: 12px 14px;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+.client-badge-attached {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background-color: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 6px;
+}
+
+.client-badge-detach {
+    background: none;
+    border: none;
+    color: #047857;
+    cursor: pointer;
+    font-size: 11px;
+    text-decoration: underline;
+    padding: 0;
+    margin-left: 8px;
+    font-weight: 500;
+}
+
+.client-badge-detach:hover {
+    color: #065f46;
+}
+
+

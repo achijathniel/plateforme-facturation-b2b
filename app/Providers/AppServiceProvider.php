@@ -31,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AdminDashboardRepositoryInterface::class, PostgresAdminDashboardRepository::class);
         $this->app->bind(OrganizationRepositoryInterface::class, OrganizationRepository::class);
         $this->app->bind(PortalDashboardRepositoryInterface::class, PostgresPortalDashboardRepository::class);
+        $this->app->bind(\App\Repositories\Contracts\ClientRepositoryInterface::class, \App\Repositories\Eloquent\ClientRepository::class);
     }
 
     /**

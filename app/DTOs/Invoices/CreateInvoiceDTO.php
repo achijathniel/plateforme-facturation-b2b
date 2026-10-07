@@ -19,6 +19,7 @@ readonly class CreateInvoiceDTO
         public string $dueDate,
         public ?string $notes,
         public array $items,
+        public ?int $clientId = null,
     ) {}
 
     /**
@@ -36,6 +37,7 @@ readonly class CreateInvoiceDTO
         string $dueDate,
         ?string $notes,
         array $items,
+        ?int $clientId = null,
     ): self {
         $itemDTOs = array_map(
             fn (array $item) => CreateInvoiceItemDTO::fromArray($item),
@@ -52,6 +54,7 @@ readonly class CreateInvoiceDTO
             dueDate: $dueDate,
             notes: $notes,
             items: $itemDTOs,
+            clientId: $clientId,
         );
     }
 }

@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { useForm, Link } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 import { formatCurrency } from '../../Utils/formatters';
+import useDebounce from '../../Hooks/useDebounce';
 
 /**
  * Générateur d'une ligne d'article vide avec identifiant unique temporaire.
@@ -23,6 +24,7 @@ const createEmptyItem = () => ({
  *     organization: { id: number, name: string },
  *     invoice?: {
  *         id: number,
+ *         client_id?: number|null,
  *         invoice_number: string,
  *         client_name?: string,
  *         client_email?: string,
@@ -66,6 +68,7 @@ export default function InvoiceForm({
         : [createEmptyItem()];
 
     const { data, setData, post, put, processing, errors, transform } = useForm({
+        client_id: invoice?.client_id || null,
         client_name: invoice?.client_name || '',
         client_email: invoice?.client_email || '',
         client_address: invoice?.client_address || '',
@@ -76,6 +79,109 @@ export default function InvoiceForm({
         action: 'draft',
         items: initialItems,
     });
+
+    // États de l'autocomplétion de l'annuaire client
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [highlightedIndex, setHighlightedIndex] = useState(-1);
+    const dropdownRef = useRef(null);
+    const inputRef = useRef(null);
+    const debouncedSearchTerm = useDebounce(data.client_name, 250);
+
+    // Recherche en temps réel de clients pour l'organisation avec annulation des requêtes obsolètes
+    useEffect(() => {
+        if (!isSearchOpen || !debouncedSearchTerm || debouncedSearchTerm.trim().length < 2) {
+            setSearchResults([]);
+            setIsSearching(false);
+            setHighlightedIndex(-1);
+            return;
+        }
+
+        const controller = new AbortController();
+        setIsSearching(true);
+
+        fetch(`/portal/clients/search?q=${encodeURIComponent(debouncedSearchTerm.trim())}`, {
+            signal: controller.signal,
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        })
+            .then((res) => res.json())
+            .then((json) => {
+                setSearchResults(json.clients || []);
+                setIsSearching(false);
+                setHighlightedIndex(-1);
+            })
+            .catch((err) => {
+                if (err.name !== 'AbortError') {
+                    setIsSearching(false);
+                }
+            });
+
+        return () => {
+            controller.abort();
+        };
+    }, [debouncedSearchTerm, isSearchOpen]);
+
+    // Fermeture du dropdown lors d'un clic en dehors
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsSearchOpen(false);
+                setHighlightedIndex(-1);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleSelectClient = (client) => {
+        setData((prev) => ({
+            ...prev,
+            client_id: client.id,
+            client_name: client.name,
+            client_email: client.email || '',
+            client_address: client.address || '',
+            client_tax_number: client.tax_number || '',
+            client_phone: client.phone || '',
+        }));
+        setIsSearchOpen(false);
+        setSearchResults([]);
+        setHighlightedIndex(-1);
+    };
+
+    const handleDetachClient = () => {
+        setData('client_id', null);
+        inputRef.current?.focus();
+    };
+
+    // Navigation au clavier dans la liste d'autocomplétion
+    const handleKeyDown = (e) => {
+        if (!isSearchOpen || searchResults.length === 0) {
+            if (e.key === 'ArrowDown' && data.client_name?.trim().length >= 2) {
+                setIsSearchOpen(true);
+            }
+            return;
+        }
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setHighlightedIndex((prev) => (prev < searchResults.length - 1 ? prev + 1 : 0));
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : searchResults.length - 1));
+        } else if (e.key === 'Enter') {
+            if (highlightedIndex >= 0 && searchResults[highlightedIndex]) {
+                e.preventDefault();
+                handleSelectClient(searchResults[highlightedIndex]);
+            }
+        } else if (e.key === 'Escape') {
+            setIsSearchOpen(false);
+            setHighlightedIndex(-1);
+        }
+    };
 
     // Mise à jour unitaire d'un champ d'une ligne avec normalisation numérique
     const handleItemChange = (index, field, value) => {
@@ -224,18 +330,96 @@ export default function InvoiceForm({
                             <label htmlFor="client_name" className="form-label required">
                                 Nom / Raison sociale de l'entreprise cliente
                             </label>
-                            <input
-                                id="client_name"
-                                name="client_name"
-                                type="text"
-                                placeholder="Ex: Société Ivoirienne de Négoce (SIN)"
-                                className={`form-input ${errors.client_name ? 'input-error' : ''}`}
-                                value={data.client_name}
-                                onChange={(e) => setData('client_name', e.target.value)}
-                                aria-invalid={!!errors.client_name}
-                                aria-describedby={errors.client_name ? 'client-name-error' : undefined}
-                                required
-                            />
+                            <div className="client-autocomplete-wrapper" ref={dropdownRef}>
+                                <input
+                                    ref={inputRef}
+                                    id="client_name"
+                                    name="client_name"
+                                    type="text"
+                                    placeholder="Ex: Société Ivoirienne de Négoce (tapez pour rechercher...)"
+                                    className={`form-input ${errors.client_name ? 'input-error' : ''}`}
+                                    value={data.client_name}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        setData((prev) => ({
+                                            ...prev,
+                                            client_name: val,
+                                            client_id: prev.client_name === val ? prev.client_id : null,
+                                        }));
+                                        setIsSearchOpen(true);
+                                    }}
+                                    onFocus={() => {
+                                        if (data.client_name && data.client_name.length >= 2) {
+                                            setIsSearchOpen(true);
+                                        }
+                                    }}
+                                    onKeyDown={handleKeyDown}
+                                    role="combobox"
+                                    aria-autocomplete="list"
+                                    aria-expanded={isSearchOpen}
+                                    aria-controls="client-autocomplete-list"
+                                    aria-activedescendant={
+                                        highlightedIndex >= 0 && searchResults[highlightedIndex]
+                                            ? `client-option-${searchResults[highlightedIndex].id}`
+                                            : undefined
+                                    }
+                                    autoComplete="off"
+                                    aria-invalid={!!errors.client_name}
+                                    aria-describedby={errors.client_name ? 'client-name-error' : undefined}
+                                    required
+                                />
+
+                                {data.client_id && (
+                                    <div className="client-badge-attached">
+                                        <span>✓ Client sélectionné dans l'annuaire</span>
+                                        <button
+                                            type="button"
+                                            onClick={handleDetachClient}
+                                            className="client-badge-detach"
+                                            title="Détacher le client pour modifier librement"
+                                        >
+                                            Détacher
+                                        </button>
+                                    </div>
+                                )}
+
+                                {isSearchOpen && data.client_name && data.client_name.trim().length >= 2 && (
+                                    <ul
+                                        id="client-autocomplete-list"
+                                        className="client-autocomplete-dropdown"
+                                        role="listbox"
+                                        aria-label="Suggestions de clients"
+                                        tabIndex={-1}
+                                    >
+                                        {isSearching ? (
+                                            <li className="client-autocomplete-empty" role="presentation">Recherche dans l'annuaire...</li>
+                                        ) : searchResults.length > 0 ? (
+                                            searchResults.map((client, idx) => (
+                                                <li
+                                                    id={`client-option-${client.id}`}
+                                                    key={client.id}
+                                                    role="option"
+                                                    aria-selected={data.client_id === client.id || highlightedIndex === idx}
+                                                    className={`client-autocomplete-item ${data.client_id === client.id ? 'selected' : ''} ${highlightedIndex === idx ? 'highlighted' : ''}`}
+                                                    onClick={() => handleSelectClient(client)}
+                                                    onMouseEnter={() => setHighlightedIndex(idx)}
+                                                >
+                                                    <div className="client-autocomplete-item-name">{client.name}</div>
+                                                    <div className="client-autocomplete-item-meta">
+                                                        {client.email && <span>📧 {client.email}</span>}
+                                                        {client.phone && <span>📞 {client.phone}</span>}
+                                                        {client.tax_number && <span>🏛️ NIF: {client.tax_number}</span>}
+                                                    </div>
+                                                </li>
+                                            ))
+                                        ) : (
+                                            <li className="client-autocomplete-empty" role="presentation">
+                                                Aucun client trouvé pour « {data.client_name} ». Il sera automatiquement ajouté à votre annuaire lors de la création.
+                                            </li>
+                                        )}
+                                    </ul>
+                                )}
+                            </div>
                             {errors.client_name && (
                                 <span id="client-name-error" className="field-error-text" role="alert">
                                     {errors.client_name}

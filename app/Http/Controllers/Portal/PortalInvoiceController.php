@@ -137,6 +137,7 @@ final class PortalInvoiceController extends Controller
         return Inertia::render('Portal/Invoices/Show', [
             'invoice' => [
                 'id'                => $invoice->id,
+                'client_id'         => $invoice->client_id,
                 'invoice_number'    => $invoice->invoice_number,
                 'client_name'       => $invoice->client_name,
                 'client_email'      => $invoice->client_email,
@@ -195,6 +196,7 @@ final class PortalInvoiceController extends Controller
         return Inertia::render('Portal/Invoices/Edit', [
             'invoice' => [
                 'id'                => $invoice->id,
+                'client_id'         => $invoice->client_id,
                 'invoice_number'    => $invoice->invoice_number,
                 'client_name'       => $invoice->client_name ?? '',
                 'client_email'      => $invoice->client_email ?? '',

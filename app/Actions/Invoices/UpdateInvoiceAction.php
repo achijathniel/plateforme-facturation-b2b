@@ -45,6 +45,7 @@ final class UpdateInvoiceAction
             $total = bcadd($subtotal, $taxAmount, 2);
 
             $updatePayload = [
+                'client_id'         => $dto->clientId ?? $invoice->client_id,
                 'client_name'       => $dto->clientName,
                 'client_email'      => $dto->clientEmail,
                 'client_address'    => $dto->clientAddress,
