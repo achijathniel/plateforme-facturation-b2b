@@ -1,0 +1,140 @@
+/* ==========================================================================
+   MODULE CSS : GESTION DES ENTREPRISES / ORGANISATIONS (ADMINISTRATION)
+   ========================================================================== */
+
+/* Badges d'état d'activité d'une organisation */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.status-badge.badge-active {
+    background-color: var(--green-bg);
+    color: var(--green-text);
+    border: 1px solid var(--green-border);
+}
+
+.status-badge.badge-inactive {
+    background-color: #f1f5f9;
+    color: var(--text-muted);
+    border: 1px solid var(--border-light);
+}
+
+/* Grille 360° de la Fiche Organisation */
+.org-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.org-info-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+}
+
+.org-info-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.org-info-card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.org-details-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.org-detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.org-detail-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+}
+
+.org-detail-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.org-detail-value a {
+    color: var(--blue-primary);
+    text-decoration: none;
+}
+
+.org-detail-value a:hover {
+    text-decoration: underline;
+}
+
+/* Bouton de bascule de statut */
+.btn-toggle-status {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    background: transparent;
+    border: 1px solid var(--border-light);
+    color: var(--text-secondary);
+}
+
+.btn-toggle-status:hover {
+    background-color: #f8fafc;
+    border-color: var(--blue-border);
+    color: var(--blue-primary);
+}
+
+.btn-toggle-status.is-active-btn:hover {
+    border-color: var(--rose-border);
+    color: var(--rose-text);
+}
+
+/* Switch d'activation dans le formulaire */
+.form-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    user-select: none;
+}
+
+.form-checkbox-input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--blue-primary);
+    cursor: pointer;
+}

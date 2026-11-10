@@ -1,4 +1,4 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    10. Notifications & Toasts SweetAlert2
    ========================================================================== */
 .dealtoo-toast-popup.swal2-toast {
@@ -147,6 +147,7 @@
     font-family: monospace;
     color: var(--blue-primary);
     margin: 0 0 6px 0;
+}
 /* Grille Émetteur & Destinataire B2B */
 .invoice-doc-parties-grid {
     display: grid;

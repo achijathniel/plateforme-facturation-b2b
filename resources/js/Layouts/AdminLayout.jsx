@@ -47,6 +47,13 @@ export default function AdminLayout({ auth, title, children }) {
                                 <span>Tableau de bord</span>
                             </Link>
                             <Link
+                                href="/admin/organizations"
+                                className={`admin-nav-link ${url.startsWith('/admin/organizations') ? 'active' : ''}`}
+                            >
+                                <span role="img" aria-hidden="true">🏢</span>
+                                <span>Entreprises</span>
+                            </Link>
+                            <Link
                                 href="/admin/invoices"
                                 className={`admin-nav-link ${url.startsWith('/admin/invoices') ? 'active' : ''}`}
                             >

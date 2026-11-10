@@ -26,3 +26,23 @@ export const formatCurrency = (amount, currency = null) => {
 export const formatNumber = (num) => {
     return new Intl.NumberFormat('fr-FR').format(num || 0);
 };
+
+/**
+ * Formate une date ISO ou standard en chaîne lisible en français.
+ * Exemple: "2026-11-10" -> "10 nov. 2026"
+ *
+ * @param {string|Date} date
+ * @returns {string}
+ */
+export const formatDate = (date) => {
+    if (!date) return 'N/A';
+    try {
+        return new Intl.DateTimeFormat('fr-FR', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+        }).format(new Date(date));
+    } catch {
+        return String(date);
+    }
+};

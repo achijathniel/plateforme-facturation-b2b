@@ -8,6 +8,7 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminInvoiceController;
+use App\Http\Controllers\Admin\AdminOrganizationController;
 use App\Http\Controllers\Portal\PortalAuthController;
 use App\Http\Controllers\Portal\PortalDashboardController;
 use App\Http\Controllers\Portal\PortalInvoiceController;
@@ -44,6 +45,27 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/invoices', [AdminInvoiceController::class, 'index'])
             ->middleware('throttle:web-admin-read')
             ->name('invoices.index');
+
+        // Gestion des Entreprises / Organisations
+        Route::prefix('organizations')->name('organizations.')->group(function () {
+            Route::get('/', [AdminOrganizationController::class, 'index'])
+                ->middleware('throttle:web-admin-read')
+                ->name('index');
+            Route::get('/create', [AdminOrganizationController::class, 'create'])->name('create');
+            Route::post('/', [AdminOrganizationController::class, 'store'])
+                ->middleware('throttle:web-admin-write')
+                ->name('store');
+            Route::get('/{organization}', [AdminOrganizationController::class, 'show'])
+                ->middleware('throttle:web-admin-read')
+                ->name('show');
+            Route::get('/{organization}/edit', [AdminOrganizationController::class, 'edit'])->name('edit');
+            Route::put('/{organization}', [AdminOrganizationController::class, 'update'])
+                ->middleware('throttle:web-admin-write')
+                ->name('update');
+            Route::post('/{organization}/toggle-status', [AdminOrganizationController::class, 'toggleStatus'])
+                ->middleware('throttle:web-admin-write')
+                ->name('toggle-status');
+        });
     });
 });
 

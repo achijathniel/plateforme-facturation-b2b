@@ -18,6 +18,9 @@
 /* 5. Gestion et filtrage des factures (Administration) */
 @import './modules/invoices-admin.css';
 
+/* 5.1. Gestion des entreprises clientes (Administration) */
+@import './modules/organizations-admin.css';
+
 /* 6. Portail entreprise B2B & menu latéral rétractable */
 @import './modules/portal.css';
 

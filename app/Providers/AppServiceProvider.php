@@ -81,5 +81,10 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('web-invoice-create', function (Request $request) {
             return Limit::perMinute(15)->by($request->user()?->id ?: $request->ip());
         });
+
+        // Rate limiter pour les mutations administratives d'organisations et paramètres (30 requêtes / minute)
+        RateLimiter::for('web-admin-write', function (Request $request) {
+            return Limit::perMinute(30)->by($request->user()?->id ?: $request->ip());
+        });
     }
 }
