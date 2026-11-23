@@ -1,17 +1,18 @@
 <?php
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redis;
-use Illuminate\Support\Facades\Route;
-
 use App\Enums\UserRole;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminInvoiceController;
 use App\Http\Controllers\Admin\AdminOrganizationController;
+use App\Http\Controllers\Admin\AdminOrganizationImportController;
 use App\Http\Controllers\Portal\PortalAuthController;
+use App\Http\Controllers\Portal\PortalClientController;
 use App\Http\Controllers\Portal\PortalDashboardController;
 use App\Http\Controllers\Portal\PortalInvoiceController;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     if (auth()->check()) {
@@ -52,6 +53,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 ->middleware('throttle:web-admin-read')
                 ->name('index');
             Route::get('/create', [AdminOrganizationController::class, 'create'])->name('create');
+            Route::get('/import', [AdminOrganizationImportController::class, 'create'])
+                ->middleware('throttle:web-admin-read')
+                ->name('import.create');
+            Route::get('/import/template', [AdminOrganizationImportController::class, 'downloadTemplate'])
+                ->middleware('throttle:web-admin-read')
+                ->name('import.template');
+            Route::post('/import', [AdminOrganizationImportController::class, 'store'])
+                ->middleware('throttle:web-admin-import')
+                ->name('import.store');
             Route::post('/', [AdminOrganizationController::class, 'store'])
                 ->middleware('throttle:web-admin-write')
                 ->name('store');
@@ -87,10 +97,10 @@ Route::prefix('portal')->name('portal.')->group(function () {
         Route::get('/dashboard', fn () => redirect()->route('portal.dashboard'));
 
         // Annuaire et recherche instantanée de clients B2B
-        Route::get('/clients/search', [\App\Http\Controllers\Portal\PortalClientController::class, 'search'])
+        Route::get('/clients/search', [PortalClientController::class, 'search'])
             ->middleware('throttle:web-portal-read')
             ->name('clients.search');
-        Route::post('/clients', [\App\Http\Controllers\Portal\PortalClientController::class, 'store'])
+        Route::post('/clients', [PortalClientController::class, 'store'])
             ->middleware('throttle:web-invoice-create')
             ->name('clients.store');
 
@@ -125,25 +135,25 @@ Route::get('/api/health', function () {
     try {
         $dbName = DB::connection()->getDatabaseName();
         $dbStatus = "Connecté à PostgreSQL (Base : {$dbName})";
-    } catch (\Exception $e) {
-        $dbStatus = "Erreur PostgreSQL : " . $e->getMessage();
+    } catch (Exception $e) {
+        $dbStatus = 'Erreur PostgreSQL : '.$e->getMessage();
     }
 
     try {
         $redisPong = Redis::ping();
         $redisStatus = "Connecté à Redis ({$redisPong})";
-    } catch (\Exception $e) {
-        $redisStatus = "Erreur Redis : " . $e->getMessage();
+    } catch (Exception $e) {
+        $redisStatus = 'Erreur Redis : '.$e->getMessage();
     }
 
     return response()->json([
-        'status'   => 'success',
-        'message'  => 'Tous les conteneurs communiquent parfaitement !',
+        'status' => 'success',
+        'message' => 'Tous les conteneurs communiquent parfaitement !',
         'services' => [
             'web_server' => 'Nginx (Reverse Proxy)',
-            'app_server' => 'PHP ' . phpversion() . ' FPM',
-            'database'   => $dbStatus,
-            'redis'      => $redisStatus,
+            'app_server' => 'PHP '.phpversion().' FPM',
+            'database' => $dbStatus,
+            'redis' => $redisStatus,
         ],
     ]);
 });

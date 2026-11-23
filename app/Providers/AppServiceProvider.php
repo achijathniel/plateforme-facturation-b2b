@@ -5,13 +5,19 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Repositories\Contracts\AdminDashboardRepositoryInterface;
+use App\Repositories\Contracts\ClientRepositoryInterface;
 use App\Repositories\Contracts\InvoiceRepositoryInterface;
 use App\Repositories\Contracts\OrganizationRepositoryInterface;
 use App\Repositories\Contracts\PortalDashboardRepositoryInterface;
+use App\Repositories\Eloquent\ClientRepository;
 use App\Repositories\Eloquent\InvoiceRepository;
 use App\Repositories\Eloquent\OrganizationRepository;
 use App\Repositories\Eloquent\PostgresAdminDashboardRepository;
 use App\Repositories\Eloquent\PostgresPortalDashboardRepository;
+use App\Services\Imports\Contracts\OrganizationSpreadsheetReaderInterface;
+use App\Services\Imports\Contracts\OrganizationTemplateGeneratorInterface;
+use App\Services\Imports\OpenSpoutOrganizationReader;
+use App\Services\Imports\OpenSpoutOrganizationTemplateGenerator;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -31,7 +37,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AdminDashboardRepositoryInterface::class, PostgresAdminDashboardRepository::class);
         $this->app->bind(OrganizationRepositoryInterface::class, OrganizationRepository::class);
         $this->app->bind(PortalDashboardRepositoryInterface::class, PostgresPortalDashboardRepository::class);
-        $this->app->bind(\App\Repositories\Contracts\ClientRepositoryInterface::class, \App\Repositories\Eloquent\ClientRepository::class);
+        $this->app->bind(ClientRepositoryInterface::class, ClientRepository::class);
+        $this->app->bind(OrganizationSpreadsheetReaderInterface::class, OpenSpoutOrganizationReader::class);
+        $this->app->bind(OrganizationTemplateGeneratorInterface::class, OpenSpoutOrganizationTemplateGenerator::class);
     }
 
     /**
@@ -85,6 +93,11 @@ class AppServiceProvider extends ServiceProvider
         // Rate limiter pour les mutations administratives d'organisations et paramètres (30 requêtes / minute)
         RateLimiter::for('web-admin-write', function (Request $request) {
             return Limit::perMinute(30)->by($request->user()?->id ?: $request->ip());
+        });
+
+        // Rate limiter strict pour l'import massif d'entreprises par fichier Excel (5 requêtes / minute)
+        RateLimiter::for('web-admin-import', function (Request $request) {
+            return Limit::perMinute(5)->by($request->user()?->id ?: $request->ip());
         });
     }
 }

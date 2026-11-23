@@ -46,4 +46,20 @@ interface OrganizationRepositoryInterface
      * Inverse le statut actif/inactif d'une organisation.
      */
     public function toggleStatus(Organization $organization): Organization;
+
+    /**
+     * Récupère uniquement les identifiants existants correspondant aux emails ou numéros fiscaux candidats.
+     *
+     * @param  array<int, string>  $emails
+     * @param  array<int, string>  $taxNumbers
+     * @return array{emails: array<string, true>, tax_numbers: array<string, true>}
+     */
+    public function findExistingIdentifiers(array $emails, array $taxNumbers): array;
+
+    /**
+     * Insère en lot plusieurs nouvelles organisations et retourne le nombre d'enregistrements créés.
+     *
+     * @param  array<int, CreateOrganizationDTO>  $dtos
+     */
+    public function createMany(array $dtos): int;
 }

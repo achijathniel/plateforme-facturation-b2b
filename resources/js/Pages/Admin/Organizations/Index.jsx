@@ -58,9 +58,17 @@ export default function Index({ auth, organizations, filters = {} }) {
         }
 
         if (debouncedSearch !== (filters.search || '')) {
-            applyFilters({ search: debouncedSearch });
+            const query = {};
+            if (debouncedSearch) query.search = debouncedSearch;
+            if (filters.status && filters.status !== 'all') query.status = filters.status;
+
+            router.get('/admin/organizations', query, {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            });
         }
-    }, [debouncedSearch, filters.search]);
+    }, [debouncedSearch, filters.search, filters.status]);
 
     const applyFilters = (override = {}) => {
         const query = {
@@ -135,8 +143,18 @@ export default function Index({ auth, organizations, filters = {} }) {
                         Supervisez, activez et gérez les entreprises clientes et émettrices de la plateforme.
                     </p>
                 </div>
-                <div>
-                    <Link href="/admin/organizations/create" className="btn-primary" style={{ textDecoration: 'none' }}>
+                <div className="org-header-actions">
+                    <Link
+                        href="/admin/organizations/import"
+                        className="btn-secondary"
+                    >
+                        <span aria-hidden="true">📥</span>
+                        <span>Importer Excel</span>
+                    </Link>
+                    <Link
+                        href="/admin/organizations/create"
+                        className="btn-primary"
+                    >
                         <span aria-hidden="true">➕</span>
                         <span>Nouvelle entreprise</span>
                     </Link>
@@ -198,74 +216,95 @@ export default function Index({ auth, organizations, filters = {} }) {
             {/* Tableau des entreprises */}
             <div className="data-card">
                 <div className="data-table-wrapper">
-                    <table className="data-table" aria-label="Liste des entreprises enregistrées">
+                    <table className="data-table org-table" aria-label="Liste des entreprises enregistrées">
                         <thead>
                             <tr>
-                                <th scope="col">Raison Sociale</th>
-                                <th scope="col">Contact</th>
-                                <th scope="col">Utilisateurs</th>
-                                <th scope="col">Factures</th>
-                                <th scope="col">Total Facturé</th>
-                                <th scope="col">Statut</th>
-                                <th scope="col" style={{ textAlign: 'right' }}>Actions</th>
+                                <th scope="col" className="org-col-name">Entreprise</th>
+                                <th scope="col" className="org-col-contact">Contact</th>
+                                <th
+                                    scope="col"
+                                    className="org-col-users"
+                                    title="Utilisateurs"
+                                    aria-label="Utilisateurs"
+                                >
+                                    Util.
+                                </th>
+                                <th
+                                    scope="col"
+                                    className="org-col-invoices"
+                                    title="Factures"
+                                    aria-label="Factures"
+                                >
+                                    Fact.
+                                </th>
+                                <th scope="col" className="org-col-total">Total Facturé</th>
+                                <th scope="col" className="org-col-status">Statut</th>
+                                <th scope="col" className="org-col-actions">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {organizations?.data && organizations.data.length > 0 ? (
                                 organizations.data.map((org) => (
                                     <tr key={org.id}>
-                                        <td>
-                                            <div>
+                                        <td className="org-col-name">
+                                            <div className="org-cell-stack">
                                                 <Link
                                                     href={`/admin/organizations/${org.id}`}
-                                                    style={{ fontWeight: 700, color: 'var(--text-primary)', textDecoration: 'none' }}
+                                                    className="org-name-link"
+                                                    title={org.name}
                                                 >
                                                     {org.name}
                                                 </Link>
                                                 {org.tax_number && (
-                                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                                                    <div
+                                                        className="org-cell-meta"
+                                                        title={`NIF : ${org.tax_number}`}
+                                                    >
                                                         NIF : {org.tax_number}
                                                     </div>
                                                 )}
                                             </div>
                                         </td>
-                                        <td>
-                                            <div>
-                                                <a href={`mailto:${org.email}`} style={{ color: 'var(--blue-primary)', textDecoration: 'none' }}>
+                                        <td className="org-col-contact">
+                                            <div className="org-cell-stack">
+                                                <a
+                                                    href={`mailto:${org.email}`}
+                                                    className="org-email-link"
+                                                    title={org.email}
+                                                >
                                                     {org.email}
                                                 </a>
                                                 {org.phone && (
-                                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                                                    <div className="org-cell-meta" title={org.phone}>
                                                         {org.phone}
                                                     </div>
                                                 )}
                                             </div>
                                         </td>
-                                        <td>
+                                        <td className="org-col-users">
                                             <span className="table-code">{org.users_count ?? 0}</span>
                                         </td>
-                                        <td>
+                                        <td className="org-col-invoices">
                                             <span className="table-code">{org.invoices_count ?? 0}</span>
                                         </td>
-                                        <td>
+                                        <td className="org-col-total">
                                             <span className="table-amount">
                                                 {formatCurrency(org.total_billed ?? 0)}
                                             </span>
                                             <span className="table-currency"> XOF</span>
                                         </td>
-                                        <td>
+                                        <td className="org-col-status">
                                             <span className={`status-badge ${org.is_active ? 'badge-active' : 'badge-inactive'}`}>
                                                 {org.is_active ? 'Active' : 'Suspendue'}
                                             </span>
                                         </td>
-                                        <td style={{ textAlign: 'right' }}>
-                                            <div style={{ display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
+                                        <td className="org-col-actions">
+                                            <div className="org-actions-group">
                                                 <Link
                                                     href={`/admin/organizations/${org.id}`}
                                                     className="btn-toggle-status"
                                                     title="Consulter la fiche 360°"
                                                     aria-label={`Consulter la fiche 360° de ${org.name}`}
-                                                    style={{ textDecoration: 'none' }}
                                                 >
                                                     <span aria-hidden="true">👁️</span> Voir
                                                 </Link>
@@ -274,7 +313,6 @@ export default function Index({ auth, organizations, filters = {} }) {
                                                     className="btn-toggle-status"
                                                     title="Modifier l'entreprise"
                                                     aria-label={`Modifier l'entreprise ${org.name}`}
-                                                    style={{ textDecoration: 'none' }}
                                                 >
                                                     <span aria-hidden="true">✏️</span> Modifier
                                                 </Link>
