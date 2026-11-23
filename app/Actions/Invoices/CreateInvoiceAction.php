@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Actions\Invoices;
 
+use App\Actions\Admin\GetAdminDashboardStatsAction;
+use App\Actions\Portal\GetPortalDashboardStatsAction;
 use App\DTOs\Clients\ClientDTO;
 use App\DTOs\Invoices\CreateInvoiceDTO;
 use App\Enums\InvoiceStatus;
 use App\Models\Invoice;
 use App\Repositories\Contracts\ClientRepositoryInterface;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 final readonly class CreateInvoiceAction
@@ -113,6 +116,9 @@ final readonly class CreateInvoiceAction
             foreach ($itemsData as $data) {
                 $invoice->items()->create($data);
             }
+
+            GetPortalDashboardStatsAction::forgetForOrganization($invoice->organization_id);
+            Cache::forget(GetAdminDashboardStatsAction::CACHE_KEY);
 
             return $invoice->load(['organization', 'items', 'client']);
         });

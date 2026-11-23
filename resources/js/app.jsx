@@ -1,14 +1,17 @@
-import '../css/app.css';
 import { createInertiaApp } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Plateforme Facturation B2B';
+const pages = import.meta.glob('./Pages/**/*.jsx');
 
 createInertiaApp({
     title: (title) => title ? `${title} - ${appName}` : appName,
-    resolve: (name) => {
-        const pages = import.meta.glob('./Pages/**/*.jsx', { eager: true });
-        const page = pages[`./Pages/${name}.jsx`];
+    resolve: async (name) => {
+        const loader = pages[`./Pages/${name}.jsx`];
+        if (!loader) {
+            throw new Error(`Page Inertia introuvable : ${name}`);
+        }
+        const page = await loader();
         return page.default ?? page;
     },
     setup({ el, App, props }) {

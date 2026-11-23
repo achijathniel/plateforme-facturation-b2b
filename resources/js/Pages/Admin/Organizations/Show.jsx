@@ -61,7 +61,7 @@ export default function Show({ auth, organization }) {
             cancelButtonColor: '#64748b',
         }).then((result) => {
             if (result.isConfirmed) {
-                router.patch(`/admin/organizations/${organization.id}/toggle-status`, {}, {
+                router.post(`/admin/organizations/${organization.id}/toggle-status`, {}, {
                     preserveScroll: true,
                 });
             }

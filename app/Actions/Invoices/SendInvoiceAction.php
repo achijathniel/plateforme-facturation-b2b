@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Actions\Invoices;
 
+use App\Actions\Admin\GetAdminDashboardStatsAction;
+use App\Actions\Portal\GetPortalDashboardStatsAction;
 use App\Enums\InvoiceStatus;
 use App\Jobs\SendInvoiceNotificationJob;
 use App\Models\Invoice;
 use DomainException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 final readonly class SendInvoiceAction
@@ -35,6 +38,9 @@ final readonly class SendInvoiceAction
 
         // Expédition asynchrone du job de notification via Redis
         SendInvoiceNotificationJob::dispatch($invoice);
+
+        GetPortalDashboardStatsAction::forgetForOrganization($invoice->organization_id);
+        Cache::forget(GetAdminDashboardStatsAction::CACHE_KEY);
 
         return $invoice->fresh(['organization', 'items']);
     }

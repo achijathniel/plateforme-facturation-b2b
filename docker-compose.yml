@@ -11,7 +11,10 @@ services:
     volumes:
       - ./:/var/www/html
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+      - ./docker/php/zz-fpm.conf:/usr/local/etc/php-fpm.d/zz-fpm.conf:ro
       - php_vendor:/var/www/html/vendor
+      - node_modules:/var/www/html/node_modules
+      - storage_framework:/var/www/html/storage/framework
     networks:
       - backend_network
     depends_on:
@@ -30,6 +33,7 @@ services:
       - ./:/var/www/html
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
       - php_vendor:/var/www/html/vendor
+      - storage_framework:/var/www/html/storage/framework
     networks:
       - backend_network
     depends_on:
@@ -105,6 +109,10 @@ volumes:
   redisdata:
     driver: local
   php_vendor:
+    driver: local
+  node_modules:
+    driver: local
+  storage_framework:
     driver: local
 
 networks:

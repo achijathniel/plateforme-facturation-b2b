@@ -11,6 +11,7 @@ use App\Models\Organization;
 use App\Repositories\Contracts\OrganizationRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 final class OrganizationRepository implements OrganizationRepositoryInterface
 {
@@ -31,36 +32,68 @@ final class OrganizationRepository implements OrganizationRepositoryInterface
      */
     public function paginateWithFilters(AdminOrganizationFilterData $filter): LengthAwarePaginator
     {
+        $invoiceStats = DB::table('invoices')
+            ->select([
+                'organization_id',
+                DB::raw('COUNT(*) as invoices_count'),
+                DB::raw('COALESCE(SUM(total), 0) as total_billed'),
+            ])
+            ->whereNull('deleted_at')
+            ->groupBy('organization_id');
+
+        $userStats = DB::table('users')
+            ->select([
+                'organization_id',
+                DB::raw('COUNT(*) as users_count'),
+            ])
+            ->groupBy('organization_id');
+
         $query = Organization::query()
-            ->withCount(['invoices', 'users'])
-            ->withSum('invoices as total_billed', 'total');
+            ->leftJoinSub($invoiceStats, 'inv_stats', function ($join): void {
+                $join->on('organizations.id', '=', 'inv_stats.organization_id');
+            })
+            ->leftJoinSub($userStats, 'usr_stats', function ($join): void {
+                $join->on('organizations.id', '=', 'usr_stats.organization_id');
+            })
+            ->select([
+                'organizations.*',
+                DB::raw('COALESCE(inv_stats.invoices_count, 0) as invoices_count'),
+                DB::raw('COALESCE(inv_stats.total_billed, 0) as total_billed'),
+                DB::raw('COALESCE(usr_stats.users_count, 0) as users_count'),
+            ]);
 
         // Filtrage textuel sécurisé (avec échappement des jokers SQL)
         if ($filter->search !== null && trim($filter->search) !== '') {
             $escaped = addcslashes(trim($filter->search), '%_');
             $term = '%' . mb_strtolower($escaped) . '%';
 
-            $query->where(function ($sub) use ($term, $escaped) {
-                $sub->whereRaw('LOWER(name) LIKE ?', [$term])
-                    ->orWhereRaw('LOWER(tax_number) LIKE ?', [$term])
-                    ->orWhereRaw('LOWER(email) LIKE ?', [$term])
-                    ->orWhere('phone', 'LIKE', '%' . $escaped . '%');
+            $query->where(function ($sub) use ($term, $escaped): void {
+                $sub->whereRaw('LOWER(organizations.name) LIKE ?', [$term])
+                    ->orWhereRaw('LOWER(organizations.tax_number) LIKE ?', [$term])
+                    ->orWhereRaw('LOWER(organizations.email) LIKE ?', [$term])
+                    ->orWhere('organizations.phone', 'LIKE', '%' . $escaped . '%');
             });
         }
 
         // Filtrage par statut d'activité
         if ($filter->status === 'active') {
-            $query->where('is_active', true);
+            $query->where('organizations.is_active', true);
         } elseif ($filter->status === 'inactive') {
-            $query->where('is_active', false);
+            $query->where('organizations.is_active', false);
         }
 
-        // Tri sécurisé
+        // Tri sécurisé via liste blanche explicite
         $direction = strtolower($filter->sortDirection) === 'asc' ? 'asc' : 'desc';
-        $allowedSorts = ['name', 'created_at', 'invoices_count', 'users_count', 'total_billed'];
-        $sort = in_array($filter->sortBy, $allowedSorts, true) ? $filter->sortBy : 'created_at';
+        $sortMap = [
+            'name'           => 'organizations.name',
+            'created_at'     => 'organizations.created_at',
+            'invoices_count' => 'COALESCE(inv_stats.invoices_count, 0)',
+            'users_count'    => 'COALESCE(usr_stats.users_count, 0)',
+            'total_billed'   => 'COALESCE(inv_stats.total_billed, 0)',
+        ];
+        $sortColumn = $sortMap[$filter->sortBy] ?? 'organizations.created_at';
 
-        return $query->orderBy($sort, $direction)
+        return $query->orderByRaw("{$sortColumn} {$direction}")
             ->paginate($filter->perPage)
             ->withQueryString();
     }

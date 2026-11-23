@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Actions\Invoices;
 
+use App\Actions\Admin\GetAdminDashboardStatsAction;
+use App\Actions\Portal\GetPortalDashboardStatsAction;
 use App\DTOs\Invoices\UpdateInvoiceDTO;
 use App\Enums\InvoiceStatus;
 use App\Jobs\SendInvoiceNotificationJob;
 use App\Models\Invoice;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 final class UpdateInvoiceAction
@@ -76,6 +79,9 @@ final class UpdateInvoiceAction
             if ($shouldSend) {
                 SendInvoiceNotificationJob::dispatch($invoice)->afterCommit();
             }
+
+            GetPortalDashboardStatsAction::forgetForOrganization($invoice->organization_id);
+            Cache::forget(GetAdminDashboardStatsAction::CACHE_KEY);
 
             return $invoice->fresh(['organization', 'items']);
         });

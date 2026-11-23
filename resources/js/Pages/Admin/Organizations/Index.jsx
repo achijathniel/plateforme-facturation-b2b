@@ -116,7 +116,7 @@ export default function Index({ auth, organizations, filters = {} }) {
             cancelButtonColor: '#64748b',
         }).then((result) => {
             if (result.isConfirmed) {
-                router.patch(`/admin/organizations/${org.id}/toggle-status`, {}, {
+                router.post(`/admin/organizations/${org.id}/toggle-status`, {}, {
                     preserveScroll: true,
                 });
             }
