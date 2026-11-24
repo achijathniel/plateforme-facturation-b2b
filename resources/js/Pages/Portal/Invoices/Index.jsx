@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
 import { Link, router } from '@inertiajs/react';
 import PortalLayout from '../../../Layouts/PortalLayout';
 import StatusBadge from '../../../Components/StatusBadge';
 import Pagination from '../../../Components/Pagination';
-import { formatCurrency } from '../../../Utils/formatters';
-import useDebounce from '../../../Hooks/useDebounce';
+import { formatCurrency, formatDate } from '../../../Utils/formatters';
+import useInertiaFilters from '../../../Hooks/useInertiaFilters';
 
 /**
  * Vue de consultation et de recherche des factures de l'espace comptable.
@@ -29,81 +28,22 @@ import useDebounce from '../../../Hooks/useDebounce';
  *     statuses?: Array<{ value: string, label: string }>
  * }} props
  */
-const dateFormatter = new Intl.DateTimeFormat('fr-FR', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-});
-
 export default function Index({ auth, organization, invoices, filters = {}, statuses = [] }) {
-    const [search, setSearch] = useState(filters.search || '');
-    const [status, setStatus] = useState(filters.status || '');
-    const isFirstRender = useRef(true);
-    const debouncedSearch = useDebounce(search, 350);
+    const {
+        values,
+        setField,
+        submitFilters: handleSearchSubmit,
+        resetFilters: handleReset,
+        hasActiveFilters,
+    } = useInertiaFilters({
+        routeUrl: '/portal/invoices',
+        initialFilters: filters,
+        defaultValues: { search: '', status: '' },
+    });
 
-    // Synchronisation de l'état local avec les retours historiques ou props
-    useEffect(() => {
-        setSearch(filters.search || '');
-        setStatus(filters.status || '');
-    }, [filters.search, filters.status]);
-
-    // Filtrage réactif dès que la valeur de recherche temporisée change
-    useEffect(() => {
-        if (isFirstRender.current) {
-            isFirstRender.current = false;
-            return;
-        }
-
-        if (debouncedSearch !== (filters.search || '')) {
-            applyFilters({ search: debouncedSearch });
-        }
-    }, [debouncedSearch]);
-
-    /**
-     * Applique les filtres avec conservation d'état Inertia (sans rechargement complet).
-     */
-    const applyFilters = (override = {}) => {
-        const query = {
-            search: override.search !== undefined ? override.search : search,
-            status: override.status !== undefined ? override.status : status,
-        };
-
-        // Éliminer les valeurs vides pour conserver une URL propre
-        Object.keys(query).forEach((key) => {
-            if (!query[key]) {
-                delete query[key];
-            }
-        });
-
-        router.get('/portal/invoices', query, {
-            preserveState: true,
-            preserveScroll: true,
-            replace: true,
-        });
-    };
-
-    const handleSearchSubmit = (e) => {
-        e.preventDefault();
-        applyFilters();
-    };
-
-    const handleStatusChange = (e) => {
-        const newStatus = e.target.value;
-        setStatus(newStatus);
-        applyFilters({ status: newStatus });
-    };
-
-    const handleReset = () => {
-        setSearch('');
-        setStatus('');
-        router.get('/portal/invoices', {}, {
-            preserveState: true,
-            preserveScroll: true,
-            replace: true,
-        });
-    };
-
-    const hasActiveFilters = Boolean(search || status);
+    const { search, status } = values;
+    const setSearch = (val) => setField('search', val, false);
+    const handleStatusChange = (e) => setField('status', e.target.value);
     const invoiceList = invoices?.data || [];
 
     return (
@@ -132,16 +72,19 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
             <div className="filter-card">
                 <form onSubmit={handleSearchSubmit} className="filter-form">
                     <div className="filter-search-group">
+                        <label htmlFor="portal-search-input" className="sr-only">
+                            Rechercher par numéro de facture
+                        </label>
                         <div className="search-input-wrapper">
                             <span className="search-icon" aria-hidden="true">🔍</span>
                             <input
+                                id="portal-search-input"
                                 type="search"
                                 name="search"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Rechercher par n° de facture..."
                                 className="filter-input"
-                                aria-label="Recherche par numéro de facture"
                             />
                         </div>
                         <button type="submit" className="btn-filter-submit">
@@ -159,7 +102,6 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
                             value={status}
                             onChange={handleStatusChange}
                             className="filter-select"
-                            aria-label="Filtrer par statut de facture"
                         >
                             <option value="">Tous les statuts</option>
                             {statuses.map((s) => (
@@ -244,21 +186,13 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
                                     <tr
                                         key={invoice.id}
                                         className="clickable-row"
-                                        tabIndex={0}
-                                        role="link"
-                                        aria-label={`Consulter la facture numéro ${invoice.invoice_number}`}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                                router.visit(`/portal/invoices/${invoice.id}`);
-                                            }
-                                        }}
                                         onClick={(e) => {
                                             const selection = window.getSelection();
                                             if (selection && selection.toString().length > 0) {
                                                 return;
                                             }
 
-                                            if (e.target.closest('a') || e.target.closest('button')) {
+                                            if (e.target.closest('a, button')) {
                                                 return;
                                             }
 
@@ -280,7 +214,7 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
                                                     {invoice.client_name || '-'}
                                                 </strong>
                                                 {invoice.client_email && (
-                                                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                                                    <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
                                                         {invoice.client_email}
                                                     </span>
                                                 )}
@@ -288,12 +222,12 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
                                         </td>
                                         <td>
                                             {invoice.issue_date
-                                                ? dateFormatter.format(new Date(invoice.issue_date))
+                                                ? formatDate(invoice.issue_date)
                                                 : '-'}
                                         </td>
                                         <td>
                                             {invoice.due_date
-                                                ? dateFormatter.format(new Date(invoice.due_date))
+                                                ? formatDate(invoice.due_date)
                                                 : '-'}
                                         </td>
                                         <td>
@@ -329,6 +263,7 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
                             from={invoices.from}
                             to={invoices.to}
                             total={invoices.total}
+                            itemLabel="factures"
                         />
                     </div>
                 )}

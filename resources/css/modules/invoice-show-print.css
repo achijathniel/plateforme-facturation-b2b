@@ -191,7 +191,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
-    background-color: var(--bg-main);
+    background-color: var(--bg-page);
     border: 1px solid var(--border-light);
     border-radius: var(--radius-sm);
     padding: 16px 20px;
@@ -230,7 +230,7 @@
 }
 
 .invoice-doc-table th {
-    background-color: var(--bg-main);
+    background-color: var(--bg-page);
     color: var(--text-secondary);
     text-align: left;
     padding: 12px 14px;
@@ -355,12 +355,16 @@
     .btn-action-new-invoice,
     .filter-card,
     .pagination,
+    .pagination-wrapper,
     .dealtoo-toast-popup,
-    .portal-sidebar-toggle {
+    .btn-portal-toggle,
+    .portal-sidebar-toggle-row,
+    .portal-sidebar-toggle,
+    .skip-link {
         display: none !important;
     }
 
-    body, .portal-app, .portal-main, .portal-content-body, .invoice-view-container {
+    body, .portal-app, .portal-layout-body, .portal-content-main, .portal-main, .portal-content-body, .invoice-view-container {
         margin: 0 !important;
         padding: 0 !important;
         background: #ffffff !important;

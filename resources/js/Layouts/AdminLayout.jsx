@@ -22,6 +22,10 @@ export default function AdminLayout({ auth, title, children }) {
             <FlashMessages />
 
             <div className="admin-layout">
+                <a href="#main-content" className="skip-link">
+                    Aller au contenu principal
+                </a>
+
                 {/* Barre de navigation supérieure sobre en blanc */}
                 <header className="admin-header">
                     <div className="admin-header-inner">
@@ -42,6 +46,7 @@ export default function AdminLayout({ auth, title, children }) {
                             <Link
                                 href="/admin/dashboard"
                                 className={`admin-nav-link ${url === '/admin/dashboard' ? 'active' : ''}`}
+                                aria-current={url === '/admin/dashboard' ? 'page' : undefined}
                             >
                                 <span role="img" aria-hidden="true">📊</span>
                                 <span>Tableau de bord</span>
@@ -49,6 +54,7 @@ export default function AdminLayout({ auth, title, children }) {
                             <Link
                                 href="/admin/organizations"
                                 className={`admin-nav-link ${url.startsWith('/admin/organizations') ? 'active' : ''}`}
+                                aria-current={url.startsWith('/admin/organizations') ? 'page' : undefined}
                             >
                                 <span role="img" aria-hidden="true">🏢</span>
                                 <span>Entreprises</span>
@@ -56,6 +62,7 @@ export default function AdminLayout({ auth, title, children }) {
                             <Link
                                 href="/admin/invoices"
                                 className={`admin-nav-link ${url.startsWith('/admin/invoices') ? 'active' : ''}`}
+                                aria-current={url.startsWith('/admin/invoices') ? 'page' : undefined}
                             >
                                 <span role="img" aria-hidden="true">📑</span>
                                 <span>Factures</span>
@@ -68,7 +75,7 @@ export default function AdminLayout({ auth, title, children }) {
                 </header>
 
                 {/* Contenu principal injecté */}
-                <main className="admin-main">
+                <main id="main-content" tabIndex={-1} className="admin-main">
                     {children}
                 </main>
             </div>

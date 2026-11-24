@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link, router } from '@inertiajs/react';
-import Swal from 'sweetalert2';
 import PortalLayout from '../../../Layouts/PortalLayout';
 import StatusBadge from '../../../Components/StatusBadge';
-import { formatCurrency } from '../../../Utils/formatters';
+import { confirmAction } from '../../../Utils/confirmAction';
+import { formatCurrency, formatDateLong } from '../../../Utils/formatters';
 
 /**
  * Vue détaillée, élégante et imprimable d'une facture.
@@ -44,12 +44,6 @@ import { formatCurrency } from '../../../Utils/formatters';
  *     }
  * }} props
  */
-const dateFormatter = new Intl.DateTimeFormat('fr-FR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-});
-
 export default function Show({ auth, organization, invoice }) {
     const [isSending, setIsSending] = useState(false);
 
@@ -57,29 +51,26 @@ export default function Show({ auth, organization, invoice }) {
         window.print();
     };
 
-    const handleSendToClient = () => {
-        Swal.fire({
+    const handleSendToClient = async () => {
+        const confirmed = await confirmAction({
             title: 'Transmettre la facture au client ?',
             text: `La facture ${invoice.invoice_number} sera validée et transmise par email à l'adresse de contact du client.`,
+            confirmText: 'Oui, envoyer par email',
             icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Oui, envoyer par email',
-            cancelButtonText: 'Annuler',
-            confirmButtonColor: '#2563eb',
-            cancelButtonColor: '#64748b',
+            tone: 'primary',
             reverseButtons: true,
-        }).then((result) => {
-            if (result.isConfirmed) {
-                setIsSending(true);
-                router.post(
-                    `/portal/invoices/${invoice.id}/send`,
-                    {},
-                    {
-                        onFinish: () => setIsSending(false),
-                    }
-                );
-            }
         });
+
+        if (confirmed) {
+            setIsSending(true);
+            router.post(
+                `/portal/invoices/${invoice.id}/send`,
+                {},
+                {
+                    onFinish: () => setIsSending(false),
+                }
+            );
+        }
     };
 
     return (
@@ -191,7 +182,7 @@ export default function Show({ auth, organization, invoice }) {
                             <span className="doc-date-label">Date d'émission</span>
                             <span className="doc-date-val">
                                 {invoice.issue_date
-                                    ? dateFormatter.format(new Date(invoice.issue_date))
+                                    ? formatDateLong(invoice.issue_date)
                                     : 'Non émise (Brouillon)'}
                             </span>
                         </div>
@@ -200,7 +191,7 @@ export default function Show({ auth, organization, invoice }) {
                             <span className="doc-date-label">Date d'échéance</span>
                             <span className="doc-date-val">
                                 {invoice.due_date
-                                    ? dateFormatter.format(new Date(invoice.due_date))
+                                    ? formatDateLong(invoice.due_date)
                                     : 'Non définie'}
                             </span>
                         </div>

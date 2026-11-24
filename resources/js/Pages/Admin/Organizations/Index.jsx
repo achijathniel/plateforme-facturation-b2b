@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
 import { Link, router } from '@inertiajs/react';
-import Swal from 'sweetalert2';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import Pagination from '../../../Components/Pagination';
+import { confirmAction } from '../../../Utils/confirmAction';
 import { formatCurrency } from '../../../Utils/formatters';
-import useDebounce from '../../../Hooks/useDebounce';
+import useInertiaFilters from '../../../Hooks/useInertiaFilters';
 
 /**
  * Vue principale de gestion des entreprises pour l'administrateur.
@@ -39,99 +38,41 @@ import useDebounce from '../../../Hooks/useDebounce';
  * }} props
  */
 export default function Index({ auth, organizations, filters = {} }) {
-    const [search, setSearch] = useState(filters.search || '');
-    const [status, setStatus] = useState(filters.status || 'all');
-    const isFirstRender = useRef(true);
-    const debouncedSearch = useDebounce(search, 350);
+    const {
+        values,
+        setField,
+        submitFilters: handleSearchSubmit,
+        resetFilters: handleReset,
+        hasActiveFilters,
+    } = useInertiaFilters({
+        routeUrl: '/admin/organizations',
+        initialFilters: filters,
+        defaultValues: { search: '', status: 'all' },
+    });
 
-    // Synchronisation lors de l'historique du navigateur
-    useEffect(() => {
-        setSearch(filters.search || '');
-        setStatus(filters.status || 'all');
-    }, [filters.search, filters.status]);
+    const { search, status } = values;
+    const setSearch = (val) => setField('search', val, false);
+    const handleStatusChange = (e) => setField('status', e.target.value);
 
-    // Filtrage réactif dès la saisie temporisée
-    useEffect(() => {
-        if (isFirstRender.current) {
-            isFirstRender.current = false;
-            return;
-        }
-
-        if (debouncedSearch !== (filters.search || '')) {
-            const query = {};
-            if (debouncedSearch) query.search = debouncedSearch;
-            if (filters.status && filters.status !== 'all') query.status = filters.status;
-
-            router.get('/admin/organizations', query, {
-                preserveState: true,
-                preserveScroll: true,
-                replace: true,
-            });
-        }
-    }, [debouncedSearch, filters.search, filters.status]);
-
-    const applyFilters = (override = {}) => {
-        const query = {
-            search: override.search !== undefined ? override.search : search,
-            status: override.status !== undefined ? override.status : status,
-        };
-
-        if (!query.search) delete query.search;
-        if (!query.status || query.status === 'all') delete query.status;
-
-        router.get('/admin/organizations', query, {
-            preserveState: true,
-            preserveScroll: true,
-            replace: true,
-        });
-    };
-
-    const handleSearchSubmit = (e) => {
-        e.preventDefault();
-        applyFilters();
-    };
-
-    const handleStatusChange = (e) => {
-        const newStatus = e.target.value;
-        setStatus(newStatus);
-        applyFilters({ status: newStatus });
-    };
-
-    const handleReset = () => {
-        setSearch('');
-        setStatus('all');
-        router.get('/admin/organizations', {}, {
-            preserveState: true,
-            preserveScroll: true,
-            replace: true,
-        });
-    };
-
-    const handleToggleStatus = (org) => {
+    const handleToggleStatus = async (org) => {
         const actionVerb = org.is_active ? 'suspendre' : 'activer';
-        const confirmColor = org.is_active ? '#e11d48' : '#16a34a';
 
-        Swal.fire({
+        const confirmed = await confirmAction({
             title: `${org.is_active ? 'Suspendre' : 'Activer'} l'accès ?`,
             text: org.is_active
                 ? `L'entreprise « ${org.name} » ne pourra plus émettre de factures ni se connecter à la plateforme.`
                 : `L'entreprise « ${org.name} » recouvrera immédiatement tous ses accès opérationnels.`,
+            confirmText: `Oui, ${actionVerb}`,
             icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: `Oui, ${actionVerb}`,
-            cancelButtonText: 'Annuler',
-            confirmButtonColor: confirmColor,
-            cancelButtonColor: '#64748b',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                router.post(`/admin/organizations/${org.id}/toggle-status`, {}, {
-                    preserveScroll: true,
-                });
-            }
+            tone: org.is_active ? 'danger' : 'success',
         });
-    };
 
-    const hasActiveFilters = Boolean(search || (status && status !== 'all'));
+        if (confirmed) {
+            router.post(`/admin/organizations/${org.id}/toggle-status`, {}, {
+                preserveScroll: true,
+            });
+        }
+    };
 
     return (
         <AdminLayout auth={auth} title="Gestion des Entreprises">
@@ -367,6 +308,7 @@ export default function Index({ auth, organizations, filters = {} }) {
                             from={organizations.from}
                             to={organizations.to}
                             total={organizations.total}
+                            itemLabel="entreprises"
                         />
                     </div>
                 )}

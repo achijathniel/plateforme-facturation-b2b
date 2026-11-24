@@ -126,6 +126,7 @@
 .btn-secondary {
     display: inline-flex;
     align-items: center;
+    gap: 6px;
     padding: 6px 12px;
     font-size: 12px;
     font-weight: 600;
@@ -134,12 +135,19 @@
     border: 1px solid var(--border-light);
     border-radius: var(--radius-sm);
     cursor: pointer;
+    text-decoration: none;
     transition: var(--transition);
 }
 
 .btn-secondary:hover {
+    border-color: var(--blue-border);
+    color: var(--blue-primary);
+    background-color: var(--blue-bg-light);
+}
+
+.btn-logout:hover {
     border-color: #fca5a5;
-    color: #e11d48;
+    color: var(--rose-text);
     background-color: #fff1f2;
 }
 
@@ -428,7 +436,7 @@
 
 .badge-draft {
     background-color: #f1f5f9;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     border: 1px solid var(--border-light);
 }
 .badge-draft .badge-dot {

@@ -1,8 +1,8 @@
 import { Link, router } from '@inertiajs/react';
-import Swal from 'sweetalert2';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import MetricCard from '../../../Components/MetricCard';
 import StatusBadge from '../../../Components/StatusBadge';
+import { confirmAction } from '../../../Utils/confirmAction';
 import { formatCurrency, formatDate } from '../../../Utils/formatters';
 
 /**
@@ -44,28 +44,24 @@ import { formatCurrency, formatDate } from '../../../Utils/formatters';
  * }} props
  */
 export default function Show({ auth, organization }) {
-    const handleToggleStatus = () => {
+    const handleToggleStatus = async () => {
         const actionVerb = organization.is_active ? 'suspendre' : 'activer';
-        const confirmColor = organization.is_active ? '#e11d48' : '#16a34a';
 
-        Swal.fire({
+        const confirmed = await confirmAction({
             title: `${organization.is_active ? 'Suspendre' : 'Activer'} l'entreprise ?`,
             text: organization.is_active
                 ? `L'entreprise « ${organization.name} » ne pourra plus émettre de factures ni se connecter à la plateforme.`
                 : `L'entreprise « ${organization.name} » recouvrera immédiatement tous ses accès opérationnels.`,
+            confirmText: `Oui, ${actionVerb}`,
             icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: `Oui, ${actionVerb}`,
-            cancelButtonText: 'Annuler',
-            confirmButtonColor: confirmColor,
-            cancelButtonColor: '#64748b',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                router.post(`/admin/organizations/${organization.id}/toggle-status`, {}, {
-                    preserveScroll: true,
-                });
-            }
+            tone: organization.is_active ? 'danger' : 'success',
         });
+
+        if (confirmed) {
+            router.post(`/admin/organizations/${organization.id}/toggle-status`, {}, {
+                preserveScroll: true,
+            });
+        }
     };
 
     return (

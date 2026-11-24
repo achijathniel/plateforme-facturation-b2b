@@ -103,7 +103,7 @@
 .form-error-text {
     font-size: 12px;
     font-weight: 500;
-    color: #e11d48;
+    color: var(--rose-text);
     margin-top: 2px;
 }
 
@@ -125,10 +125,10 @@
 }
 
 .btn-primary {
-    width: 100%;
     display: inline-flex;
     justify-content: center;
     align-items: center;
+    gap: 8px;
     padding: 11px 18px;
     font-size: 14px;
     font-weight: 600;
@@ -137,8 +137,13 @@
     border: 1px solid transparent;
     border-radius: var(--radius-sm);
     cursor: pointer;
+    text-decoration: none;
     box-shadow: var(--shadow-sm);
     transition: var(--transition);
+}
+
+.auth-card .btn-primary {
+    width: 100%;
 }
 
 .btn-primary:hover:not(:disabled) {

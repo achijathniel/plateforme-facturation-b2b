@@ -1,8 +1,9 @@
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm, Link } from '@inertiajs/react';
-import Swal from 'sweetalert2';
-import { formatCurrency } from '../../Utils/formatters';
-import useDebounce from '../../Hooks/useDebounce';
+import { confirmAction } from '../../Utils/confirmAction';
+import ClientAutocomplete from './ClientAutocomplete';
+import InvoiceItemsTable from './InvoiceItemsTable';
+import InvoiceSummaryCard from './InvoiceSummaryCard';
 
 /**
  * Générateur d'une ligne d'article vide avec identifiant unique temporaire.
@@ -18,7 +19,7 @@ const createEmptyItem = () => ({
 
 /**
  * Composant unifié et réutilisable pour la création et la modification de factures B2B.
- * Encapsule l'état réactif, la saisie des articles, les calculs de TVA (18%) et les validations.
+ * Orchestre l'état Inertia, les calculs de TVA (18%) et les sous-composants dédiés.
  *
  * @param {{
  *     organization: { id: number, name: string },
@@ -57,7 +58,6 @@ export default function InvoiceForm({
     backUrl,
     isEdit = false,
 }) {
-    // Initialisation sécurisée des articles existants ou création d'une ligne par défaut
     const initialItems = invoice?.items && invoice.items.length > 0
         ? invoice.items.map((it) => ({
             id: it.id || createEmptyItem().id,
@@ -66,6 +66,8 @@ export default function InvoiceForm({
             unit_price: it.unit_price ?? '',
         }))
         : [createEmptyItem()];
+
+    const [submittingAction, setSubmittingAction] = useState('draft');
 
     const { data, setData, post, put, processing, errors, transform } = useForm({
         client_id: invoice?.client_id || null,
@@ -80,62 +82,13 @@ export default function InvoiceForm({
         items: initialItems,
     });
 
-    // États de l'autocomplétion de l'annuaire client
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
-    const [searchResults, setSearchResults] = useState([]);
-    const [isSearching, setIsSearching] = useState(false);
-    const [highlightedIndex, setHighlightedIndex] = useState(-1);
-    const dropdownRef = useRef(null);
-    const inputRef = useRef(null);
-    const debouncedSearchTerm = useDebounce(data.client_name, 250);
-
-    // Recherche en temps réel de clients pour l'organisation avec annulation des requêtes obsolètes
-    useEffect(() => {
-        if (!isSearchOpen || !debouncedSearchTerm || debouncedSearchTerm.trim().length < 2) {
-            setSearchResults([]);
-            setIsSearching(false);
-            setHighlightedIndex(-1);
-            return;
-        }
-
-        const controller = new AbortController();
-        setIsSearching(true);
-
-        fetch(`/portal/clients/search?q=${encodeURIComponent(debouncedSearchTerm.trim())}`, {
-            signal: controller.signal,
-            headers: {
-                Accept: 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-        })
-            .then((res) => res.json())
-            .then((json) => {
-                setSearchResults(json.clients || []);
-                setIsSearching(false);
-                setHighlightedIndex(-1);
-            })
-            .catch((err) => {
-                if (err.name !== 'AbortError') {
-                    setIsSearching(false);
-                }
-            });
-
-        return () => {
-            controller.abort();
-        };
-    }, [debouncedSearchTerm, isSearchOpen]);
-
-    // Fermeture du dropdown lors d'un clic en dehors
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setIsSearchOpen(false);
-                setHighlightedIndex(-1);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+    const handleClientNameChange = (val) => {
+        setData((prev) => ({
+            ...prev,
+            client_name: val,
+            client_id: prev.client_name === val ? prev.client_id : null,
+        }));
+    };
 
     const handleSelectClient = (client) => {
         setData((prev) => ({
@@ -147,52 +100,17 @@ export default function InvoiceForm({
             client_tax_number: client.tax_number || '',
             client_phone: client.phone || '',
         }));
-        setIsSearchOpen(false);
-        setSearchResults([]);
-        setHighlightedIndex(-1);
     };
 
     const handleDetachClient = () => {
         setData('client_id', null);
-        inputRef.current?.focus();
     };
 
-    // Navigation au clavier dans la liste d'autocomplétion
-    const handleKeyDown = (e) => {
-        if (!isSearchOpen || searchResults.length === 0) {
-            if (e.key === 'ArrowDown' && data.client_name?.trim().length >= 2) {
-                setIsSearchOpen(true);
-            }
-            return;
-        }
-
-        if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            setHighlightedIndex((prev) => (prev < searchResults.length - 1 ? prev + 1 : 0));
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : searchResults.length - 1));
-        } else if (e.key === 'Enter') {
-            if (highlightedIndex >= 0 && searchResults[highlightedIndex]) {
-                e.preventDefault();
-                handleSelectClient(searchResults[highlightedIndex]);
-            }
-        } else if (e.key === 'Escape') {
-            setIsSearchOpen(false);
-            setHighlightedIndex(-1);
-        }
-    };
-
-    // Mise à jour unitaire d'un champ d'une ligne avec normalisation numérique
     const handleItemChange = (index, field, value) => {
         const updatedItems = [...data.items];
-
-        let sanitizedValue = value;
-        if (field === 'unit_price' || field === 'quantity') {
-            sanitizedValue = typeof value === 'string'
-                ? value.replace(/\s+/g, '').replace(',', '.')
-                : value;
-        }
+        const sanitizedValue = (field === 'unit_price' || field === 'quantity') && typeof value === 'string'
+            ? value.replace(/\s+/g, '').replace(',', '.')
+            : value;
 
         updatedItems[index] = {
             ...updatedItems[index],
@@ -207,11 +125,9 @@ export default function InvoiceForm({
 
     const removeItem = (index) => {
         if (data.items.length <= 1) return;
-        const updatedItems = data.items.filter((_, i) => i !== index);
-        setData('items', updatedItems);
+        setData('items', data.items.filter((_, i) => i !== index));
     };
 
-    // Calculs financiers réactifs en temps réel (HT, TVA 18%, TTC)
     const financials = useMemo(() => {
         let subtotal = 0;
         data.items.forEach((item) => {
@@ -228,8 +144,8 @@ export default function InvoiceForm({
         return { subtotal, taxAmount, total };
     }, [data.items]);
 
-    // Soumission du formulaire Inertia
     const executeSubmit = (actionType) => {
+        setSubmittingAction(actionType);
         transform((currentData) => ({
             ...currentData,
             action: actionType,
@@ -247,39 +163,30 @@ export default function InvoiceForm({
         }
     };
 
-    const handleSubmit = (actionType) => {
-        if (actionType === 'send') {
-            const confirmTitle = isEdit
-                ? 'Enregistrer et envoyer au client ?'
-                : 'Émettre et envoyer la facture au client ?';
-
-            const confirmText = isEdit
-                ? `La facture ${invoice?.invoice_number || ''} sera mise à jour et expédiée immédiatement par notification email à ${data.client_email || "l'adresse du client"}.`
-                : `La facture sera immédiatement transmise par notification email à ${data.client_email || "l'adresse du client"}.`;
-
-            Swal.fire({
-                title: confirmTitle,
-                text: confirmText,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: isEdit ? 'Oui, enregistrer et envoyer' : 'Oui, émettre et envoyer',
-                cancelButtonText: 'Annuler',
-                confirmButtonColor: '#2563eb',
-                cancelButtonColor: '#64748b',
-                reverseButtons: true,
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    executeSubmit('send');
-                }
-            });
-        } else {
+    const handleSubmit = async (actionType) => {
+        if (actionType !== 'send') {
             executeSubmit('draft');
+            return;
+        }
+
+        const confirmed = await confirmAction({
+            title: isEdit ? 'Enregistrer et envoyer au client ?' : 'Émettre et envoyer la facture au client ?',
+            text: isEdit
+                ? `La facture ${invoice?.invoice_number || ''} sera mise à jour et expédiée immédiatement par notification email à ${data.client_email || "l'adresse du client"}.`
+                : `La facture sera immédiatement transmise par notification email à ${data.client_email || "l'adresse du client"}.`,
+            confirmText: isEdit ? 'Oui, enregistrer et envoyer' : 'Oui, émettre et envoyer',
+            icon: 'question',
+            tone: 'primary',
+            reverseButtons: true,
+        });
+
+        if (confirmed) {
+            executeSubmit('send');
         }
     };
 
     return (
         <div className="invoice-create-container">
-            {/* En-tête de la page */}
             <div className="page-header-row">
                 <div>
                     <div className="breadcrumb-nav">
@@ -301,10 +208,9 @@ export default function InvoiceForm({
                     e.preventDefault();
                     handleSubmit('draft');
                 }}
-                className="invoice-form"
+                className="invoice-create-form"
                 noValidate
             >
-                {/* Alerte générale si erreurs de validation */}
                 {Object.keys(errors).length > 0 && (
                     <div className="form-alert error" role="alert">
                         <strong>Erreurs de validation :</strong> Veuillez vérifier les informations
@@ -326,106 +232,14 @@ export default function InvoiceForm({
                     </div>
 
                     <div className="form-row">
-                        <div className="form-group">
-                            <label htmlFor="client_name" className="form-label required">
-                                Nom / Raison sociale de l'entreprise cliente
-                            </label>
-                            <div className="client-autocomplete-wrapper" ref={dropdownRef}>
-                                <input
-                                    ref={inputRef}
-                                    id="client_name"
-                                    name="client_name"
-                                    type="text"
-                                    placeholder="Ex: Société Ivoirienne de Négoce (tapez pour rechercher...)"
-                                    className={`form-input ${errors.client_name ? 'input-error' : ''}`}
-                                    value={data.client_name}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        setData((prev) => ({
-                                            ...prev,
-                                            client_name: val,
-                                            client_id: prev.client_name === val ? prev.client_id : null,
-                                        }));
-                                        setIsSearchOpen(true);
-                                    }}
-                                    onFocus={() => {
-                                        if (data.client_name && data.client_name.length >= 2) {
-                                            setIsSearchOpen(true);
-                                        }
-                                    }}
-                                    onKeyDown={handleKeyDown}
-                                    role="combobox"
-                                    aria-autocomplete="list"
-                                    aria-expanded={isSearchOpen}
-                                    aria-controls="client-autocomplete-list"
-                                    aria-activedescendant={
-                                        highlightedIndex >= 0 && searchResults[highlightedIndex]
-                                            ? `client-option-${searchResults[highlightedIndex].id}`
-                                            : undefined
-                                    }
-                                    autoComplete="off"
-                                    aria-invalid={!!errors.client_name}
-                                    aria-describedby={errors.client_name ? 'client-name-error' : undefined}
-                                    required
-                                />
-
-                                {data.client_id && (
-                                    <div className="client-badge-attached">
-                                        <span>✓ Client sélectionné dans l'annuaire</span>
-                                        <button
-                                            type="button"
-                                            onClick={handleDetachClient}
-                                            className="client-badge-detach"
-                                            title="Détacher le client pour modifier librement"
-                                        >
-                                            Détacher
-                                        </button>
-                                    </div>
-                                )}
-
-                                {isSearchOpen && data.client_name && data.client_name.trim().length >= 2 && (
-                                    <ul
-                                        id="client-autocomplete-list"
-                                        className="client-autocomplete-dropdown"
-                                        role="listbox"
-                                        aria-label="Suggestions de clients"
-                                        tabIndex={-1}
-                                    >
-                                        {isSearching ? (
-                                            <li className="client-autocomplete-empty" role="presentation">Recherche dans l'annuaire...</li>
-                                        ) : searchResults.length > 0 ? (
-                                            searchResults.map((client, idx) => (
-                                                <li
-                                                    id={`client-option-${client.id}`}
-                                                    key={client.id}
-                                                    role="option"
-                                                    aria-selected={data.client_id === client.id || highlightedIndex === idx}
-                                                    className={`client-autocomplete-item ${data.client_id === client.id ? 'selected' : ''} ${highlightedIndex === idx ? 'highlighted' : ''}`}
-                                                    onClick={() => handleSelectClient(client)}
-                                                    onMouseEnter={() => setHighlightedIndex(idx)}
-                                                >
-                                                    <div className="client-autocomplete-item-name">{client.name}</div>
-                                                    <div className="client-autocomplete-item-meta">
-                                                        {client.email && <span>📧 {client.email}</span>}
-                                                        {client.phone && <span>📞 {client.phone}</span>}
-                                                        {client.tax_number && <span>🏛️ NIF: {client.tax_number}</span>}
-                                                    </div>
-                                                </li>
-                                            ))
-                                        ) : (
-                                            <li className="client-autocomplete-empty" role="presentation">
-                                                Aucun client trouvé pour « {data.client_name} ». Il sera automatiquement ajouté à votre annuaire lors de la création.
-                                            </li>
-                                        )}
-                                    </ul>
-                                )}
-                            </div>
-                            {errors.client_name && (
-                                <span id="client-name-error" className="field-error-text" role="alert">
-                                    {errors.client_name}
-                                </span>
-                            )}
-                        </div>
+                        <ClientAutocomplete
+                            clientId={data.client_id}
+                            clientName={data.client_name}
+                            error={errors.client_name}
+                            onChangeName={handleClientNameChange}
+                            onSelectClient={handleSelectClient}
+                            onDetachClient={handleDetachClient}
+                        />
 
                         <div className="form-group">
                             <label htmlFor="client_email" className="form-label required">
@@ -521,142 +335,18 @@ export default function InvoiceForm({
                 </div>
 
                 {/* Section 2 : Lignes de facturation */}
-                <div className="form-section-card" style={{ marginTop: '24px' }}>
-                    <div className="section-header-flex">
-                        <div>
-                            <h3 className="section-title">2. Lignes de facturation (Articles & Prestations)</h3>
-                            <p className="section-description">
-                                Détaillez les produits, prestations ou services faisant l'objet de cette facture.
-                            </p>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={addItem}
-                            className="btn-add-line"
-                            aria-label="Ajouter une nouvelle ligne d'article"
-                        >
-                            <span aria-hidden="true">➕</span>
-                            <span>Ajouter une ligne</span>
-                        </button>
-                    </div>
+                <InvoiceItemsTable
+                    items={data.items}
+                    errors={errors}
+                    onItemChange={handleItemChange}
+                    onAddItem={addItem}
+                    onRemoveItem={removeItem}
+                />
 
-                    {errors.items && typeof errors.items === 'string' && (
-                        <div className="form-alert error" role="alert" style={{ marginBottom: '16px' }}>
-                            {errors.items}
-                        </div>
-                    )}
-
-                    <div className="data-table-wrapper" style={{ overflowX: 'auto' }}>
-                        <table className="invoice-items-form-table">
-                            <thead>
-                                <tr>
-                                    <th style={{ width: '45%' }}>Description / Prestation *</th>
-                                    <th style={{ width: '15%' }}>Quantité *</th>
-                                    <th style={{ width: '20%' }}>Prix unitaire HT (FCFA) *</th>
-                                    <th style={{ width: '15%' }}>Total HT</th>
-                                    <th style={{ width: '5%', textAlign: 'center' }}>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {data.items.map((item, index) => {
-                                    const qty = parseFloat(item.quantity) || 0;
-                                    const unitPrice = parseFloat(item.unit_price) || 0;
-                                    const lineTotal = Math.round(qty * unitPrice * 100) / 100;
-                                    const descError = errors[`items.${index}.description`];
-                                    const qtyError = errors[`items.${index}.quantity`];
-                                    const priceError = errors[`items.${index}.unit_price`];
-
-                                    return (
-                                        <tr key={item.id || index}>
-                                            <td>
-                                                <input
-                                                    type="text"
-                                                    name={`items[${index}].description`}
-                                                    value={item.description}
-                                                    onChange={(e) =>
-                                                        handleItemChange(index, 'description', e.target.value)
-                                                    }
-                                                    placeholder="Ex: Prestation de maintenance informatique"
-                                                    className={`form-input table-input ${descError ? 'input-error' : ''}`}
-                                                    aria-label={`Description ligne ${index + 1}`}
-                                                    aria-invalid={!!descError}
-                                                />
-                                                {descError && (
-                                                    <p className="field-error-text" role="alert">{descError}</p>
-                                                )}
-                                            </td>
-
-                                            <td>
-                                                <input
-                                                    type="number"
-                                                    name={`items[${index}].quantity`}
-                                                    min="0.01"
-                                                    step="any"
-                                                    value={item.quantity}
-                                                    onChange={(e) =>
-                                                        handleItemChange(index, 'quantity', e.target.value)
-                                                    }
-                                                    className={`form-input table-input ${qtyError ? 'input-error' : ''}`}
-                                                    aria-label={`Quantité ligne ${index + 1}`}
-                                                    aria-invalid={!!qtyError}
-                                                />
-                                                {qtyError && (
-                                                    <p className="field-error-text" role="alert">{qtyError}</p>
-                                                )}
-                                            </td>
-
-                                            <td>
-                                                <input
-                                                    type="number"
-                                                    name={`items[${index}].unit_price`}
-                                                    min="0"
-                                                    step="any"
-                                                    placeholder="50000"
-                                                    value={item.unit_price}
-                                                    onChange={(e) =>
-                                                        handleItemChange(index, 'unit_price', e.target.value)
-                                                    }
-                                                    className={`form-input table-input ${priceError ? 'input-error' : ''}`}
-                                                    aria-label={`Prix unitaire ligne ${index + 1}`}
-                                                    aria-invalid={!!priceError}
-                                                />
-                                                {priceError && (
-                                                    <p className="field-error-text" role="alert">{priceError}</p>
-                                                )}
-                                            </td>
-
-                                            <td className="cell-line-total">
-                                                <strong>{formatCurrency(lineTotal, 'XOF')}</strong>
-                                            </td>
-
-                                            <td className="cell-action">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeItem(index)}
-                                                    disabled={data.items.length <= 1}
-                                                    className="btn-delete-row"
-                                                    title={
-                                                        data.items.length <= 1
-                                                           ? 'Une facture doit comporter au moins un article'
-                                                            : 'Supprimer cette ligne'
-                                                    }
-                                                    aria-label={`Supprimer la ligne ${index + 1}`}
-                                                >
-                                                    🗑️
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                {/* Section 3 : Modalités de règlement & Échéance */}
+                {/* Section 3 : Modalités de règlement & Récapitulatif */}
                 <div className="invoice-bottom-grid" style={{ marginTop: '24px' }}>
                     <div className="form-section-card">
-                        <h3 className="section-title">3. Modalités & Règlement</h3>
+                        <h3 className="section-title">3. Modalités &amp; Règlement</h3>
                         <p className="section-description">
                             Date limite de règlement et mentions particulières.
                         </p>
@@ -707,66 +397,13 @@ export default function InvoiceForm({
                         </div>
                     </div>
 
-                    {/* Bloc Récapitulatif Financier & Boutons d'action */}
-                    <div className="summary-card">
-                        <h3 className="summary-title">Récapitulatif Financier</h3>
-
-                        <div className="summary-line">
-                            <span className="summary-label">Sous-total Hors Taxes :</span>
-                            <span className="summary-value">
-                                {formatCurrency(financials.subtotal, 'XOF')}
-                            </span>
-                        </div>
-
-                        <div className="summary-line">
-                            <span className="summary-label">TVA applicable (18%) :</span>
-                            <span className="summary-value">
-                                {formatCurrency(financials.taxAmount, 'XOF')}
-                            </span>
-                        </div>
-
-                        <div className="summary-divider" />
-
-                        <div className="summary-line total">
-                            <span className="summary-label-total">Total Net TTC :</span>
-                            <span className="total-price">
-                                {formatCurrency(financials.total, 'XOF')}
-                            </span>
-                        </div>
-
-                        <div className="summary-actions-group">
-                            <button
-                                type="submit"
-                                disabled={processing}
-                                className="btn-save-draft"
-                            >
-                                <span>💾</span>
-                                <span>
-                                    {processing && data.action === 'draft'
-                                        ? 'Enregistrement...'
-                                        : isEdit
-                                            ? 'Enregistrer les modifications'
-                                            : 'Enregistrer en brouillon'}
-                                </span>
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => handleSubmit('send')}
-                                disabled={processing}
-                                className="btn-emit-send"
-                            >
-                                <span>🚀</span>
-                                <span>
-                                    {processing && data.action === 'send'
-                                        ? 'Transmission en cours...'
-                                        : isEdit
-                                            ? 'Enregistrer & Envoyer au client'
-                                            : 'Émettre et envoyer au client'}
-                                </span>
-                            </button>
-                        </div>
-                    </div>
+                    <InvoiceSummaryCard
+                        financials={financials}
+                        processing={processing}
+                        action={submittingAction}
+                        isEdit={isEdit}
+                        onSendSubmit={() => handleSubmit('send')}
+                    />
                 </div>
             </form>
         </div>

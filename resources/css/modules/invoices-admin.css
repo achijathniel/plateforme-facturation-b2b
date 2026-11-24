@@ -64,7 +64,7 @@
     width: 100%;
     padding: 8px 12px 8px 34px;
     font-size: 13px;
-    border: 1px solid var(--border-light);
+    border: 1px solid var(--border-subtle);
     border-radius: var(--radius-sm);
     background-color: var(--bg-surface);
     color: var(--text-primary);
@@ -74,7 +74,7 @@
 .filter-input:focus {
     outline: none;
     border-color: var(--blue-primary);
-    box-shadow: 0 0 0 3px var(--blue-focus-ring);
+    box-shadow: 0 0 0 3px var(--blue-ring);
 }
 
 .btn-filter-submit {
@@ -113,7 +113,7 @@
 .filter-select {
     padding: 8px 12px;
     font-size: 13px;
-    border: 1px solid var(--border-light);
+    border: 1px solid var(--border-subtle);
     border-radius: var(--radius-sm);
     background-color: var(--bg-surface);
     color: var(--text-primary);
@@ -124,7 +124,7 @@
 .filter-select:focus {
     outline: none;
     border-color: var(--blue-primary);
-    box-shadow: 0 0 0 3px var(--blue-focus-ring);
+    box-shadow: 0 0 0 3px var(--blue-ring);
 }
 
 .btn-reset-filter {
@@ -246,6 +246,11 @@
     border-color: var(--blue-border);
     color: var(--blue-primary);
     background-color: var(--blue-bg-light);
+}
+
+.pagination-link:focus-visible {
+    outline: 2px solid var(--blue-primary);
+    outline-offset: 2px;
 }
 
 .pagination-link.active {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import FlashMessages from '../Components/FlashMessages';
 import UserControls from '../Components/UserControls';
@@ -19,30 +19,28 @@ export default function PortalLayout({ auth, title, organization, children }) {
     const { url } = usePage();
     const orgName = organization?.name || auth?.user?.organization?.name || 'Mon Entreprise';
 
-    // État mémorisé pour plier / déplier la barre latérale (sécurisé contre les erreurs d'hydratation SSR)
-    const [isCollapsed, setIsCollapsed] = useState(false);
-
-    useEffect(() => {
-        try {
-            const saved = localStorage.getItem('dealtoo_portal_sidebar_collapsed');
-            if (saved !== null) {
-                setIsCollapsed(saved === 'true');
-            }
-        } catch {
-            // Mode incognito ou restrictions d'accès au stockage local
+    // État mémorisé sans double rendu au montage (protégé contre le SSR)
+    const [isCollapsed, setIsCollapsed] = useState(() => {
+        if (typeof window === 'undefined') {
+            return false;
         }
-    }, []);
+        try {
+            return window.localStorage.getItem('dealtoo_portal_sidebar_collapsed') === 'true';
+        } catch {
+            return false;
+        }
+    });
 
     const toggleSidebar = () => {
-        setIsCollapsed((prev) => {
-            const next = !prev;
+        const next = !isCollapsed;
+        setIsCollapsed(next);
+        if (typeof window !== 'undefined') {
             try {
-                localStorage.setItem('dealtoo_portal_sidebar_collapsed', String(next));
+                window.localStorage.setItem('dealtoo_portal_sidebar_collapsed', String(next));
             } catch {
-                // Ignore
+                // Mode incognito ou restrictions d'accès au stockage local
             }
-            return next;
-        });
+        }
     };
 
     return (
@@ -51,6 +49,9 @@ export default function PortalLayout({ auth, title, organization, children }) {
             <FlashMessages />
 
             <div className="portal-app">
+                <a href="#main-content" className="skip-link">
+                    Aller au contenu principal
+                </a>
                 {/* 1. EN-TÊTE SUPÉRIEUR FIXE (Logo, Nom, Rôle vert & Déconnexion) */}
                 <header className="admin-header portal-header-top">
                     <div className="admin-header-inner">
@@ -143,26 +144,23 @@ export default function PortalLayout({ auth, title, organization, children }) {
                             <div className="portal-nav-group">
                                 {!isCollapsed && <span className="portal-nav-group-title">Comptabilité</span>}
 
-                                <Link
-                                    href="/portal/payments"
+                                <span
                                     className="portal-nav-link disabled"
+                                    aria-disabled="true"
                                     title="Règlements & Paiements (Bientôt disponible)"
-                                    onClick={(e) => e.preventDefault()}
                                 >
                                     <span className="portal-nav-icon" aria-hidden="true">💳</span>
-                                    {!isCollapsed && (
-                                        <span className="portal-nav-text">
-                                            Règlements
-                                            <span className="badge-coming-soon">Bientôt</span>
-                                        </span>
-                                    )}
-                                </Link>
+                                    <span className={isCollapsed ? 'sr-only' : 'portal-nav-text'}>
+                                        Règlements
+                                        {!isCollapsed && <span className="badge-coming-soon">Bientôt</span>}
+                                    </span>
+                                </span>
                             </div>
                         </nav>
                     </aside>
 
                     {/* Zone de contenu principale à droite */}
-                    <main className="portal-content-main">
+                    <main id="main-content" tabIndex={-1} className="portal-content-main">
                         {children}
                     </main>
                 </div>

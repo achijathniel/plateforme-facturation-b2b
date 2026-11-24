@@ -7,10 +7,11 @@ import { Link } from '@inertiajs/react';
  *     links: Array<{ url: string|null, label: string, active: boolean }>,
  *     from?: number,
  *     to?: number,
- *     total?: number
+ *     total?: number,
+ *     itemLabel?: string
  * }} props
  */
-export default function Pagination({ links, from, to, total }) {
+export default function Pagination({ links, from, to, total, itemLabel = 'éléments' }) {
     if (!links || links.length <= 1) {
         return null;
     }
@@ -29,16 +30,16 @@ export default function Pagination({ links, from, to, total }) {
     };
 
     return (
-        <div className="pagination-wrapper" aria-label="Pagination des factures">
+        <div className="pagination-wrapper">
             {total !== undefined && (
                 <p className="pagination-summary">
                     Affichage de <span className="pagination-number">{from || 0}</span> à{' '}
                     <span className="pagination-number">{to || 0}</span> sur{' '}
-                    <span className="pagination-number">{total}</span> factures
+                    <span className="pagination-number">{total}</span> {itemLabel}
                 </p>
             )}
 
-            <nav className="pagination-nav" aria-label="Navigation des pages">
+            <nav className="pagination-nav" aria-label={`Pagination des ${itemLabel}`}>
                 <ul className="pagination-list">
                     {links.map((link, index) => {
                         const isNavButton =
@@ -55,7 +56,7 @@ export default function Pagination({ links, from, to, total }) {
                                 : `Aller à la page ${labelText}`;
 
                         return (
-                            <li key={index} className="pagination-item">
+                            <li key={`${link.label}-${index}`} className="pagination-item">
                                 {link.url ? (
                                     <Link
                                         href={link.url}

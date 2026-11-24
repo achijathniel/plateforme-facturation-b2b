@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Architecture;
 
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use Tests\TestCase;
 
 class FrontendArchitectureTest extends TestCase
@@ -25,29 +27,29 @@ class FrontendArchitectureTest extends TestCase
     public function test_invoice_create_and_edit_reuse_invoice_form_component(): void
     {
         $createPath = resource_path('js/Pages/Portal/Invoices/Create.jsx');
-        $editPath   = resource_path('js/Pages/Portal/Invoices/Edit.jsx');
+        $editPath = resource_path('js/Pages/Portal/Invoices/Edit.jsx');
 
         $this->assertFileExists($createPath);
         $this->assertFileExists($editPath);
 
         $createContent = file_get_contents($createPath);
-        $editContent   = file_get_contents($editPath);
+        $editContent = file_get_contents($editPath);
 
         $this->assertMatchesRegularExpression(
             '/<InvoiceForm\b/',
             $createContent,
-            "Create.jsx doit instancier le composant JSX <InvoiceForm /> au lieu de recréer le formulaire."
+            'Create.jsx doit instancier le composant JSX <InvoiceForm /> au lieu de recréer le formulaire.'
         );
 
         $this->assertMatchesRegularExpression(
             '/<InvoiceForm\b/',
             $editContent,
-            "Edit.jsx doit instancier le composant JSX <InvoiceForm /> au lieu de recréer le formulaire."
+            'Edit.jsx doit instancier le composant JSX <InvoiceForm /> au lieu de recréer le formulaire.'
         );
 
         // Garde-fou sur la taille des conteneurs pour empêcher la réintroduction de 300 lignes dupliquées
         $createLines = count(explode("\n", $createContent));
-        $editLines   = count(explode("\n", $editContent));
+        $editLines = count(explode("\n", $editContent));
 
         $this->assertLessThan(
             60,
@@ -67,25 +69,25 @@ class FrontendArchitectureTest extends TestCase
      */
     public function test_auth_login_pages_reuse_login_form_component(): void
     {
-        $adminLoginPath  = resource_path('js/Pages/Admin/Auth/Login.jsx');
+        $adminLoginPath = resource_path('js/Pages/Admin/Auth/Login.jsx');
         $portalLoginPath = resource_path('js/Pages/Portal/Auth/Login.jsx');
 
         $this->assertFileExists($adminLoginPath);
         $this->assertFileExists($portalLoginPath);
 
-        $adminLogin  = file_get_contents($adminLoginPath);
+        $adminLogin = file_get_contents($adminLoginPath);
         $portalLogin = file_get_contents($portalLoginPath);
 
         $this->assertMatchesRegularExpression(
             '/<LoginForm\b/',
             $adminLogin,
-            "Admin Login.jsx doit instancier le composant JSX factorisé <LoginForm />."
+            'Admin Login.jsx doit instancier le composant JSX factorisé <LoginForm />.'
         );
 
         $this->assertMatchesRegularExpression(
             '/<LoginForm\b/',
             $portalLogin,
-            "Portal Login.jsx doit instancier le composant JSX factorisé <LoginForm />."
+            'Portal Login.jsx doit instancier le composant JSX factorisé <LoginForm />.'
         );
     }
 
@@ -94,25 +96,25 @@ class FrontendArchitectureTest extends TestCase
      */
     public function test_layouts_reuse_user_controls_component(): void
     {
-        $adminLayoutPath  = resource_path('js/Layouts/AdminLayout.jsx');
+        $adminLayoutPath = resource_path('js/Layouts/AdminLayout.jsx');
         $portalLayoutPath = resource_path('js/Layouts/PortalLayout.jsx');
 
         $this->assertFileExists($adminLayoutPath);
         $this->assertFileExists($portalLayoutPath);
 
-        $adminLayout  = file_get_contents($adminLayoutPath);
+        $adminLayout = file_get_contents($adminLayoutPath);
         $portalLayout = file_get_contents($portalLayoutPath);
 
         $this->assertMatchesRegularExpression(
             '/<UserControls\b/',
             $adminLayout,
-            "AdminLayout doit instancier le composant JSX <UserControls />."
+            'AdminLayout doit instancier le composant JSX <UserControls />.'
         );
 
         $this->assertMatchesRegularExpression(
             '/<UserControls\b/',
             $portalLayout,
-            "PortalLayout doit instancier le composant JSX <UserControls />."
+            'PortalLayout doit instancier le composant JSX <UserControls />.'
         );
     }
 
@@ -129,7 +131,7 @@ class FrontendArchitectureTest extends TestCase
         $this->assertStringContainsString(
             "@import './modules/variables.css';",
             $appCss,
-            "app.css doit importer ses modules et ne pas contenir de styles en vrac."
+            'app.css doit importer ses modules et ne pas contenir de styles en vrac.'
         );
 
         $this->assertLessThan(
@@ -137,5 +139,80 @@ class FrontendArchitectureTest extends TestCase
             count(explode("\n", $appCss)),
             "app.css ne doit être qu'un point d'entrée d'imports modulaires."
         );
+    }
+
+    /**
+     * Vérifie que les pages CRUD/Import d'entreprises restent des Skinny Pages (< 60 lignes)
+     * et réutilisent leurs composants dédiés.
+     */
+    public function test_admin_organization_pages_are_skinny_and_reuse_shared_components(): void
+    {
+        $checks = [
+            ['path' => resource_path('js/Pages/Admin/Organizations/Create.jsx'), 'tag' => '/<OrganizationForm\b/'],
+            ['path' => resource_path('js/Pages/Admin/Organizations/Edit.jsx'), 'tag' => '/<OrganizationForm\b/'],
+            ['path' => resource_path('js/Pages/Admin/Organizations/Import.jsx'), 'tag' => '/<OrganizationImportForm\b/'],
+        ];
+
+        foreach ($checks as $check) {
+            $this->assertFileExists($check['path']);
+            $content = (string) file_get_contents($check['path']);
+            $this->assertMatchesRegularExpression($check['tag'], $content);
+
+            $lines = count(explode("\n", $content));
+            $this->assertLessThan(
+                60,
+                $lines,
+                "{$check['path']} est trop verbeux ({$lines} lignes). La logique doit rester dans le composant partagé."
+            );
+        }
+    }
+
+    /**
+     * Vérifie qu'aucun fichier JS/JSX n'importe sweetalert2 statiquement afin de préserver le code-splitting.
+     */
+    public function test_sweetalert2_is_never_statically_imported(): void
+    {
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator(resource_path('js'))
+        );
+
+        foreach ($iterator as $file) {
+            if (! $file->isFile() || ! in_array($file->getExtension(), ['js', 'jsx'], true)) {
+                continue;
+            }
+
+            $content = (string) file_get_contents($file->getPathname());
+            $this->assertDoesNotMatchRegularExpression(
+                '/^\s*import\s+.*from\s+[\'"]sweetalert2[\'"]/m',
+                $content,
+                "Le fichier {$file->getPathname()} doit charger sweetalert2 dynamiquement via confirmAction() ou import()."
+            );
+        }
+    }
+
+    /**
+     * Vérifie que les modules CSS ne référencent pas de custom properties inexistantes dans variables.css.
+     */
+    public function test_css_modules_only_reference_defined_custom_properties(): void
+    {
+        $variablesCss = (string) file_get_contents(resource_path('css/modules/variables.css'));
+        preg_match_all('/(--[a-zA-Z0-9-]+)\s*:/', $variablesCss, $definedMatches);
+        $definedVars = array_flip($definedMatches[1]);
+
+        $cssFiles = glob(resource_path('css/modules/*.css')) ?: [];
+        $this->assertNotEmpty($cssFiles);
+
+        foreach ($cssFiles as $cssFile) {
+            $content = (string) file_get_contents($cssFile);
+            preg_match_all('/var\(\s*(--[a-zA-Z0-9-]+)\s*\)/', $content, $usedMatches);
+
+            foreach ($usedMatches[1] as $varName) {
+                $this->assertArrayHasKey(
+                    $varName,
+                    $definedVars,
+                    "La variable CSS {$varName} utilisée dans ".basename($cssFile).' n\'est pas définie dans variables.css.'
+                );
+            }
+        }
     }
 }

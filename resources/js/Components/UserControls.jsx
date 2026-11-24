@@ -23,7 +23,7 @@ export default function UserControls({ auth, logoutUrl }) {
                 href={logoutUrl}
                 method="post"
                 as="button"
-                className="btn-secondary"
+                className="btn-secondary btn-logout"
             >
                 Déconnexion
             </Link>
