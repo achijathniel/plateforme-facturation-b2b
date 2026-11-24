@@ -76,9 +76,9 @@ export default function Show({ auth, organization }) {
                         </Link>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '8px' }}>
-                        <h2 className="admin-page-title" style={{ margin: 0 }}>
+                        <h1 className="admin-page-title" style={{ margin: 0 }}>
                             {organization.name}
-                        </h2>
+                        </h1>
                         <span className={`status-badge ${organization.is_active ? 'badge-active' : 'badge-inactive'}`}>
                             {organization.is_active ? 'Active' : 'Suspendue'}
                         </span>

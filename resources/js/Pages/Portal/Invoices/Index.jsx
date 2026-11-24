@@ -53,7 +53,7 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
             <div className="admin-page-header">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
                     <div>
-                        <h2 className="portal-page-title">Mes Factures</h2>
+                        <h1 className="portal-page-title">Mes Factures</h1>
                         <p className="portal-page-subtitle">
                             Historique, recherche et suivi des factures de <strong>{organization?.name}</strong>
                         </p>

@@ -119,6 +119,35 @@ class FrontendArchitectureTest extends TestCase
     }
 
     /**
+     * Vérifie que AdminLayout et PortalLayout réutilisent le composant partagé AppSidebarLayout.
+     */
+    public function test_layouts_reuse_app_sidebar_layout_component(): void
+    {
+        $sidebarPath = resource_path('js/Components/Layout/AppSidebarLayout.jsx');
+        $adminLayoutPath = resource_path('js/Layouts/AdminLayout.jsx');
+        $portalLayoutPath = resource_path('js/Layouts/PortalLayout.jsx');
+
+        $this->assertFileExists($sidebarPath);
+        $this->assertFileExists($adminLayoutPath);
+        $this->assertFileExists($portalLayoutPath);
+
+        $adminLayout = (string) file_get_contents($adminLayoutPath);
+        $portalLayout = (string) file_get_contents($portalLayoutPath);
+
+        $this->assertMatchesRegularExpression(
+            '/<AppSidebarLayout\b/',
+            $adminLayout,
+            'AdminLayout doit réutiliser le composant partagé <AppSidebarLayout />.'
+        );
+
+        $this->assertMatchesRegularExpression(
+            '/<AppSidebarLayout\b/',
+            $portalLayout,
+            'PortalLayout doit réutiliser le composant partagé <AppSidebarLayout />.'
+        );
+    }
+
+    /**
      * Vérifie que le CSS reste modulaire et n'est pas réécrit sous forme de monolithe.
      */
     public function test_css_remains_modular_via_imports(): void

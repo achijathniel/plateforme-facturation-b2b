@@ -131,7 +131,7 @@ export default function Show({ auth, organization, invoice }) {
                     {/* En-tête du document */}
                     <header className="invoice-doc-header">
                         <div className="invoice-doc-brand">
-                            <h2>{organization?.name || 'Entreprise B2B'}</h2>
+                            <h1>{organization?.name || 'Entreprise B2B'}</h1>
                             <p>Plateforme de Facturation & Comptabilité B2B</p>
                         </div>
 

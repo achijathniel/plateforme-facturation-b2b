@@ -12,9 +12,9 @@ export default function Dashboard({ auth, stats }) {
                 <span className="admin-banner-tag">
                     Session Administrateur Active
                 </span>
-                <h2 className="admin-banner-heading">
+                <h1 className="admin-banner-heading">
                     Bienvenue, {auth?.user?.name} !
-                </h2>
+                </h1>
                 <p className="admin-banner-text">
                     Supervision globale de la facturation B2B. Données consolidées en temps réel sur PostgreSQL 16 avec calculs à précision arbitraire et mise en cache haute performance.
                 </p>

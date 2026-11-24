@@ -124,6 +124,7 @@
     margin-bottom: 28px;
 }
 
+.invoice-doc-brand h1,
 .invoice-doc-brand h2 {
     font-size: 24px;
     font-weight: 800;
@@ -360,11 +361,21 @@
     .btn-portal-toggle,
     .portal-sidebar-toggle-row,
     .portal-sidebar-toggle,
+    .app-sidebar,
+    .app-sidebar-backdrop,
+    .app-topbar,
+    .app-mobile-menu-btn,
     .skip-link {
         display: none !important;
     }
 
-    body, .portal-app, .portal-layout-body, .portal-content-main, .portal-main, .portal-content-body, .invoice-view-container {
+    html, body, .app-shell, .app-main-column, .app-main-content {
+        display: block !important;
+        min-height: auto !important;
+        height: auto !important;
+    }
+
+    body, .app-shell, .app-main-column, .app-main-content, .portal-app, .portal-layout-body, .portal-content-main, .portal-main, .portal-content-body, .invoice-view-container {
         margin: 0 !important;
         padding: 0 !important;
         background: #ffffff !important;

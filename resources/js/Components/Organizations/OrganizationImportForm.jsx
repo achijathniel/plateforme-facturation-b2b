@@ -58,7 +58,7 @@ export default function OrganizationImportForm({ importReport = null }) {
                         ← Retour aux entreprises
                     </Link>
                 </div>
-                <h2 className="admin-page-title">Importer des entreprises (Excel / CSV)</h2>
+                <h1 className="admin-page-title">Importer des entreprises (Excel / CSV)</h1>
                 <p className="admin-page-subtitle">
                     Créez plusieurs entreprises en une seule opération à partir d'un fichier tableur structuré.
                 </p>

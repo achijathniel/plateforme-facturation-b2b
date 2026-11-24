@@ -56,9 +56,9 @@ export default function OrganizationForm({
                             ← Retour à la liste
                         </Link>
                     </div>
-                    <h2 className="portal-page-title">
+                    <h1 className="portal-page-title">
                         {isEdit ? `Modifier l'entreprise « ${organization?.name} »` : 'Créer une nouvelle entreprise'}
-                    </h2>
+                    </h1>
                     <p className="portal-page-subtitle">
                         {isEdit
                             ? "Mettez à jour les coordonnées juridiques et administratives de l'entreprise."

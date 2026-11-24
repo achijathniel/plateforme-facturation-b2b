@@ -100,12 +100,16 @@
 
 .admin-profile {
     text-align: right;
+    min-width: 0;
 }
 
 .admin-user-name {
     font-size: 13px;
     font-weight: 600;
     color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .admin-user-badge {

@@ -52,7 +52,7 @@ export default function InvoicesIndex({ auth, invoices, filters = {}, statuses =
             {/* En-tête de la section */}
             <div className="admin-page-header">
                 <div>
-                    <h2 className="admin-page-title">Gestion des Factures</h2>
+                    <h1 className="admin-page-title">Gestion des Factures</h1>
                     <p className="admin-page-subtitle">
                         Consultez, filtrez et supervisez l'intégralité des factures émises sur la plateforme.
                     </p>

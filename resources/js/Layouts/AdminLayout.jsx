@@ -1,12 +1,20 @@
-import { Head, Link, usePage } from '@inertiajs/react';
-import { Briefcase, Building2, FileText, LayoutDashboard } from 'lucide-react';
-import FlashMessages from '../Components/FlashMessages';
+import { usePage } from '@inertiajs/react';
+import {
+    Briefcase,
+    Building2,
+    FileSpreadsheet,
+    FileText,
+    LayoutDashboard,
+    LogOut,
+    Plus,
+} from 'lucide-react';
+import AppSidebarLayout from '../Components/Layout/AppSidebarLayout';
 import UserControls from '../Components/UserControls';
+import { buildInvoiceStatusQuickItems, parseInertiaUrl } from '../Utils/navigationHelpers';
 
 /**
  * Layout principal pour les vues de l'espace administration.
- * Encapsule la barre supérieure, la navigation principale, l'identité de marque,
- * les informations du profil connecté et le bouton de déconnexion.
+ * Délègue le menu latéral pleine hauteur au composant partagé AppSidebarLayout.
  *
  * @param {{
  *     auth: { user?: { name: string, role: string } },
@@ -16,70 +24,87 @@ import UserControls from '../Components/UserControls';
  */
 export default function AdminLayout({ auth, title, children }) {
     const { url } = usePage();
+    const { pathname, currentStatus } = parseInertiaUrl(url);
+
+    const primaryNav = [
+        {
+            key: 'admin-dashboard',
+            label: 'Tableau de bord',
+            href: '/admin/dashboard',
+            icon: <LayoutDashboard size={17} aria-hidden="true" />,
+            isActive: pathname === '/admin/dashboard',
+        },
+        {
+            key: 'admin-organizations',
+            label: 'Entreprises',
+            href: '/admin/organizations',
+            icon: <Building2 size={17} aria-hidden="true" />,
+            isActive:
+                pathname.startsWith('/admin/organizations') &&
+                !pathname.startsWith('/admin/organizations/import'),
+        },
+        {
+            key: 'admin-invoices',
+            label: 'Factures',
+            href: '/admin/invoices',
+            icon: <FileText size={17} aria-hidden="true" />,
+            isActive: pathname.startsWith('/admin/invoices') && !currentStatus,
+        },
+    ];
+
+    const quickSection = {
+        title: 'Suivi factures',
+        items: buildInvoiceStatusQuickItems({
+            keyPrefix: 'admin-invoices',
+            basePath: '/admin/invoices',
+            pathname,
+            currentStatus,
+            statuses: ['paid', 'sent', 'overdue', 'draft'],
+        }),
+    };
+
+    const footerItems = [
+        {
+            key: 'admin-import',
+            label: 'Importer Excel',
+            href: '/admin/organizations/import',
+            icon: <FileSpreadsheet size={16} aria-hidden="true" />,
+            isActive: pathname.startsWith('/admin/organizations/import'),
+        },
+        {
+            key: 'admin-logout',
+            label: 'Déconnexion',
+            href: '/admin/logout',
+            method: 'post',
+            as: 'button',
+            icon: <LogOut size={16} aria-hidden="true" />,
+            danger: true,
+        },
+    ];
 
     return (
-        <>
-            {title && <Head title={title} />}
-            <FlashMessages />
-
-            <div className="admin-layout">
-                <a href="#main-content" className="skip-link">
-                    Aller au contenu principal
-                </a>
-
-                {/* Barre de navigation supérieure sobre en blanc */}
-                <header className="admin-header">
-                    <div className="admin-header-inner">
-                        <div className="admin-brand">
-                            <div className="admin-brand-icon" aria-hidden="true">
-                                <Briefcase size={18} aria-hidden="true" />
-                            </div>
-                            <div>
-                                <h1 className="admin-brand-title">
-                                    Dealtoo Billing B2B
-                                </h1>
-                                <p className="admin-brand-subtitle">Espace Administrateur</p>
-                            </div>
-                        </div>
-
-                        {/* Navigation principale */}
-                        <nav className="admin-nav" aria-label="Navigation principale">
-                            <Link
-                                href="/admin/dashboard"
-                                className={`admin-nav-link ${url === '/admin/dashboard' ? 'active' : ''}`}
-                                aria-current={url === '/admin/dashboard' ? 'page' : undefined}
-                            >
-                                <LayoutDashboard size={16} aria-hidden="true" />
-                                <span>Tableau de bord</span>
-                            </Link>
-                            <Link
-                                href="/admin/organizations"
-                                className={`admin-nav-link ${url.startsWith('/admin/organizations') ? 'active' : ''}`}
-                                aria-current={url.startsWith('/admin/organizations') ? 'page' : undefined}
-                            >
-                                <Building2 size={16} aria-hidden="true" />
-                                <span>Entreprises</span>
-                            </Link>
-                            <Link
-                                href="/admin/invoices"
-                                className={`admin-nav-link ${url.startsWith('/admin/invoices') ? 'active' : ''}`}
-                                aria-current={url.startsWith('/admin/invoices') ? 'page' : undefined}
-                            >
-                                <FileText size={16} aria-hidden="true" />
-                                <span>Factures</span>
-                            </Link>
-                        </nav>
-
-                        {/* Profil connecté & Déconnexion */}
-                        <UserControls auth={auth} logoutUrl="/admin/logout" />
-                    </div>
-                </header>
-
-                {/* Contenu principal injecté */}
-                <main id="main-content" tabIndex={-1} className="admin-main">
-                    {children}
-                </main>
-            </div>
-        </>
+        <AppSidebarLayout
+            title={title}
+            storageKey="dealtoo_admin_sidebar_collapsed"
+            sidebarAriaLabel="Menu latéral d'administration"
+            brand={{
+                icon: <Briefcase size={16} aria-hidden="true" />,
+                title: 'Dealtoo Billing',
+                subtitle: 'Administration',
+                href: '/admin/dashboard',
+            }}
+            primaryNav={primaryNav}
+            quickSection={quickSection}
+            footerItems={footerItems}
+            topbarContext="Espace Administrateur"
+            topbarAction={{
+                href: '/admin/organizations/create',
+                label: 'Nouvelle entreprise',
+                icon: <Plus size={15} aria-hidden="true" />,
+            }}
+            topbarRight={<UserControls auth={auth} logoutUrl="/admin/logout" />}
+        >
+            {children}
+        </AppSidebarLayout>
     );
 }

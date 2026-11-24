@@ -1,0 +1,529 @@
+/* ==========================================================================
+   SHELL UNIFIÉ : SIDEBAR PLEINE HAUTEUR (100vh) & TOPBAR LÉGÈRE
+   Architecture inspirée d'une ergonomie linéaire sobre (Admin & Portail)
+   ========================================================================== */
+
+.app-shell {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    background-color: var(--bg-page);
+}
+
+/* ==========================================================================
+   1. BARRE LATÉRALE GAUCHE PLEINE HAUTEUR
+   ========================================================================== */
+.app-sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    width: var(--sidebar-width);
+    flex-shrink: 0;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    z-index: 40;
+    transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* En-tête du menu latéral (Logo compact + bouton de repli PanelLeft) */
+.app-sidebar-header {
+    min-height: var(--topbar-height);
+    padding: 0 12px 0 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.app-sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    text-decoration: none;
+    color: inherit;
+    border-radius: var(--radius-sm);
+}
+
+.app-sidebar-brand-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: var(--radius-sm);
+    background-color: var(--blue-bg-light);
+    border: 1px solid var(--blue-border-subtle);
+    color: var(--blue-primary);
+}
+
+.app-sidebar-brand-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.app-sidebar-brand-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.app-sidebar-brand-subtitle {
+    font-size: 10.5px;
+    font-weight: 500;
+    color: var(--text-muted);
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.app-sidebar-toggle,
+.app-sidebar-mobile-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-xs);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.app-sidebar-toggle:hover,
+.app-sidebar-mobile-close:hover {
+    background-color: var(--sidebar-hover-bg);
+    color: var(--text-primary);
+}
+
+.app-sidebar-mobile-close {
+    display: none;
+}
+
+/* Corps scrollable de la sidebar (Zones 1 et 2) */
+.app-sidebar-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 6px 10px 14px;
+    gap: 20px;
+}
+
+/* Zone 1 : Navigation principale */
+.app-sidebar-nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.app-sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: var(--transition);
+}
+
+.app-sidebar-link:hover:where(:not(.is-disabled):not(.is-active)) {
+    background-color: var(--sidebar-hover-bg);
+    color: var(--text-primary);
+}
+
+.app-sidebar-link.is-active {
+    background-color: var(--sidebar-active-bg);
+    color: var(--blue-hover);
+    font-weight: 600;
+}
+
+.app-sidebar-link.is-disabled {
+    color: var(--sidebar-disabled-text);
+    cursor: not-allowed;
+}
+
+.app-sidebar-link-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.app-sidebar-link-text {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.app-sidebar-link-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.badge-coming-soon {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    background-color: var(--sidebar-badge-bg);
+    color: var(--text-secondary);
+    border-radius: var(--radius-xs);
+    margin-left: 6px;
+    flex-shrink: 0;
+}
+
+/* Zone 2 : Raccourcis à pastilles colorées + action + */
+.app-sidebar-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.app-sidebar-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 6px 6px 10px;
+}
+
+.app-sidebar-section-title {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+}
+
+.app-sidebar-section-add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-xs);
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.app-sidebar-section-add:hover {
+    background-color: var(--sidebar-hover-bg);
+    color: var(--blue-primary);
+}
+
+.app-sidebar-quick-link {
+    font-size: 13px;
+    padding: 7px 10px;
+}
+
+.app-sidebar-quick-code {
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    color: inherit;
+}
+
+.app-sidebar-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.app-sidebar-dot.dot-emerald {
+    background-color: var(--dot-emerald);
+}
+
+.app-sidebar-dot.dot-blue {
+    background-color: var(--dot-blue);
+}
+
+.app-sidebar-dot.dot-rose {
+    background-color: var(--dot-rose);
+}
+
+.app-sidebar-dot.dot-slate {
+    background-color: var(--dot-slate);
+}
+
+.app-sidebar-dot.dot-amber {
+    background-color: var(--dot-amber);
+}
+
+/* Règles du mode replié scopées strictement au desktop (>= 961px) */
+@media (min-width: 961px) {
+    .app-sidebar.is-collapsed {
+        width: var(--sidebar-collapsed-width);
+    }
+
+    .app-sidebar.is-collapsed .app-sidebar-header {
+        justify-content: center;
+        padding: 0;
+    }
+
+    .app-sidebar.is-collapsed .app-sidebar-link {
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        margin: 0 auto;
+    }
+
+    .app-sidebar.is-collapsed .app-sidebar-section {
+        border-top: 1px solid var(--border-light);
+        padding-top: 10px;
+    }
+
+    .app-sidebar.is-collapsed .app-sidebar-quick-link {
+        width: 42px;
+        height: 36px;
+        padding: 0;
+        margin: 0 auto;
+        justify-content: center;
+        gap: 4px;
+    }
+}
+
+/* Zone 3 : Pied de sidebar ancré en bas */
+.app-sidebar-footer {
+    margin-top: auto;
+    padding: 10px 10px 12px;
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.app-sidebar-footer-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.app-sidebar-footer-btn {
+    width: 100%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+}
+
+.app-sidebar-link.app-sidebar-footer-btn.is-danger:hover,
+.app-sidebar-link.is-danger:hover {
+    background-color: var(--rose-bg);
+    color: var(--rose-text);
+}
+
+/* ==========================================================================
+   2. COLONNE DE DROITE : TOPBAR LÉGÈRE & CONTENU PRINCIPAL
+   ========================================================================== */
+.app-main-column {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-topbar {
+    min-height: var(--topbar-height);
+    padding: 8px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background-color: var(--bg-page);
+    border-bottom: 1px solid var(--border-light);
+    position: sticky;
+    top: 0;
+    z-index: 30;
+}
+
+.app-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.app-mobile-menu-btn {
+    display: none;
+    width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: var(--transition);
+}
+
+.app-mobile-menu-btn:hover {
+    border-color: var(--blue-primary);
+    color: var(--blue-primary);
+}
+
+.app-topbar-context {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.app-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+    min-width: 0;
+}
+
+.app-topbar-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: var(--radius-sm);
+    background-color: var(--blue-primary);
+    color: var(--text-inverted);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: var(--transition);
+}
+
+.app-topbar-cta:hover {
+    background-color: var(--blue-hover);
+}
+
+.app-main-content {
+    flex: 1;
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 28px;
+}
+
+.app-sidebar-backdrop {
+    display: none;
+}
+
+/* ==========================================================================
+   3. RESPONSIVE MOBILE & TABLETTE (TIROIR LATÉRAL ACCESSIBLE)
+   ========================================================================== */
+@media (max-width: 960px) {
+    .app-mobile-menu-btn {
+        display: inline-flex;
+    }
+
+    .app-sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: 264px;
+        visibility: hidden;
+        box-shadow: none;
+        transform: translateX(-100%);
+        transition: transform 0.22s ease, visibility 0s linear 0.22s;
+        z-index: 60;
+    }
+
+    .app-sidebar.is-mobile-open {
+        visibility: visible;
+        box-shadow: var(--shadow-lg);
+        transform: translateX(0);
+        transition: transform 0.22s ease, visibility 0s linear 0s;
+    }
+
+    .app-sidebar-toggle {
+        display: none;
+    }
+
+    .app-sidebar-mobile-close {
+        display: inline-flex;
+    }
+
+    .app-sidebar-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background-color: var(--sidebar-backdrop);
+        z-index: 50;
+    }
+
+    .app-topbar {
+        padding: 8px 16px;
+    }
+
+    .app-main-content {
+        padding: 20px 16px;
+    }
+}
+
+@media (max-width: 640px) {
+    .app-topbar-context {
+        display: none;
+    }
+
+    .app-topbar-right {
+        gap: 8px;
+    }
+
+    .app-topbar-right .admin-user-controls {
+        gap: 8px;
+    }
+
+    .app-topbar-right .admin-profile {
+        max-width: 108px;
+    }
+
+    .app-topbar-cta {
+        padding: 7px 10px;
+    }
+
+    .app-topbar-cta-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+}
+
+@media (max-width: 420px) {
+    .app-topbar-right .admin-profile {
+        display: none;
+    }
+}

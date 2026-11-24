@@ -41,6 +41,7 @@
     --amber-border: #fcd34d;
 
     /* Ombres & Rayons */
+    --radius-xs: 6px;
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 16px;
@@ -51,5 +52,23 @@
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
 
     --transition: all 0.15s ease-in-out;
+
+    /* Shell Sidebar Pleine Hauteur */
+    --sidebar-bg: #ffffff;
+    --sidebar-active-bg: #eff6ff;
+    --sidebar-hover-bg: #f1f5f9;
+    --sidebar-badge-bg: #f1f5f9;
+    --sidebar-disabled-text: #475569;
+    --sidebar-backdrop: rgba(15, 23, 42, 0.35);
+    --sidebar-width: 248px;
+    --sidebar-collapsed-width: 68px;
+    --topbar-height: 60px;
+
+    /* Pastilles de suivi rapide (contraste >= 3:1 sur #ffffff et #eff6ff) */
+    --dot-slate: #64748b;
+    --dot-blue: #2563eb;
+    --dot-emerald: #047857;
+    --dot-rose: #e11d48;
+    --dot-amber: #b45309;
 }
 

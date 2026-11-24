@@ -1,13 +1,19 @@
-import { useState } from 'react';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { Building2, ChevronLeft, ChevronRight, CreditCard, FileText, LayoutDashboard, Plus } from 'lucide-react';
-import FlashMessages from '../Components/FlashMessages';
+import { usePage } from '@inertiajs/react';
+import {
+    Building2,
+    CreditCard,
+    FileText,
+    LayoutDashboard,
+    LogOut,
+    Plus,
+} from 'lucide-react';
+import AppSidebarLayout from '../Components/Layout/AppSidebarLayout';
 import UserControls from '../Components/UserControls';
+import { buildInvoiceStatusQuickItems, parseInertiaUrl } from '../Utils/navigationHelpers';
 
 /**
  * Layout principal pour l'espace portail de l'entreprise cliente.
- * Conserve l'en-tête supérieur avec le profil et la déconnexion,
- * et intègre une barre latérale gauche pliable / dépliable.
+ * Délègue le menu latéral pleine hauteur au composant partagé AppSidebarLayout.
  *
  * @param {{
  *     auth: { user?: { name: string, role: string, organization?: { id: number, name: string } } },
@@ -19,161 +25,88 @@ import UserControls from '../Components/UserControls';
 export default function PortalLayout({ auth, title, organization, children }) {
     const { url } = usePage();
     const orgName = organization?.name || auth?.user?.organization?.name || 'Mon Entreprise';
+    const { pathname, currentStatus } = parseInertiaUrl(url);
 
-    // État mémorisé sans double rendu au montage (protégé contre le SSR)
-    const [isCollapsed, setIsCollapsed] = useState(() => {
-        if (typeof window === 'undefined') {
-            return false;
-        }
-        try {
-            return window.localStorage.getItem('dealtoo_portal_sidebar_collapsed') === 'true';
-        } catch {
-            return false;
-        }
-    });
+    const primaryNav = [
+        {
+            key: 'portal-dashboard',
+            label: 'Tableau de bord',
+            href: '/portal-dashboard',
+            icon: <LayoutDashboard size={17} aria-hidden="true" />,
+            isActive:
+                pathname.startsWith('/portal-dashboard') ||
+                pathname.startsWith('/portal/dashboard'),
+        },
+        {
+            key: 'portal-invoices',
+            label: 'Mes Factures',
+            href: '/portal/invoices',
+            icon: <FileText size={17} aria-hidden="true" />,
+            isActive:
+                pathname.startsWith('/portal/invoices') &&
+                !pathname.includes('/create') &&
+                !currentStatus,
+        },
+        {
+            key: 'portal-payments',
+            label: 'Règlements',
+            icon: <CreditCard size={17} aria-hidden="true" />,
+            disabled: true,
+            badge: 'Bientôt',
+            title: 'Règlements & Paiements (Bientôt disponible)',
+        },
+    ];
 
-    const toggleSidebar = () => {
-        const next = !isCollapsed;
-        setIsCollapsed(next);
-        if (typeof window !== 'undefined') {
-            try {
-                window.localStorage.setItem('dealtoo_portal_sidebar_collapsed', String(next));
-            } catch {
-                // Mode incognito ou restrictions d'accès au stockage local
-            }
-        }
+    const quickSection = {
+        title: 'Vues rapides',
+        addAction: {
+            href: '/portal/invoices/create',
+            label: 'Créer une nouvelle facture',
+        },
+        items: buildInvoiceStatusQuickItems({
+            keyPrefix: 'portal-invoices',
+            basePath: '/portal/invoices',
+            pathname,
+            currentStatus,
+            statuses: ['draft', 'sent', 'paid', 'overdue'],
+        }),
     };
 
+    const footerItems = [
+        {
+            key: 'portal-logout',
+            label: 'Déconnexion',
+            href: '/portal/logout',
+            method: 'post',
+            as: 'button',
+            icon: <LogOut size={16} aria-hidden="true" />,
+            danger: true,
+        },
+    ];
+
     return (
-        <>
-            {title && <Head title={title} />}
-            <FlashMessages />
-
-            <div className="portal-app">
-                <a href="#main-content" className="skip-link">
-                    Aller au contenu principal
-                </a>
-                {/* 1. EN-TÊTE SUPÉRIEUR FIXE (Logo, Nom, Rôle vert & Déconnexion) */}
-                <header className="admin-header portal-header-top">
-                    <div className="admin-header-inner">
-                        <div className="admin-brand">
-                            <div className="admin-brand-icon" aria-hidden="true">
-                                <Building2 size={18} aria-hidden="true" />
-                            </div>
-                            <div>
-                                <h1 className="admin-brand-title">
-                                    {orgName}
-                                </h1>
-                                <p className="admin-brand-subtitle">Portail Facturation Client</p>
-                            </div>
-                        </div>
-
-                        {/* Profil connecté & Déconnexion */}
-                        <UserControls auth={auth} logoutUrl="/portal/logout" />
-                    </div>
-                </header>
-
-                {/* 2. CORPS PRINCIPAL AVEC MENU LATÉRAL GAUCHE RÉTRACTABLE */}
-                <div className="portal-layout-body">
-                    {/* Menu latéral gauche */}
-                    <aside
-                        className={`portal-sidebar ${isCollapsed ? 'collapsed' : ''}`}
-                        aria-label="Menu latéral de comptabilité"
-                    >
-                        {/* Bouton de bascule Plier / Déplier */}
-                        <div className="portal-sidebar-toggle-row">
-                            <button
-                                type="button"
-                                onClick={toggleSidebar}
-                                className="btn-portal-toggle"
-                                aria-expanded={!isCollapsed}
-                                aria-controls="portal-sidebar-nav"
-                                title={isCollapsed ? 'Déplier le menu latéral' : 'Replier le menu latéral'}
-                                aria-label={isCollapsed ? 'Déplier le menu latéral' : 'Replier le menu latéral'}
-                            >
-                                <span className="toggle-icon" aria-hidden="true">
-                                    {isCollapsed ? <ChevronRight size={14} aria-hidden="true" /> : <ChevronLeft size={14} aria-hidden="true" />}
-                                </span>
-                                {!isCollapsed && <span className="toggle-label">Replier</span>}
-                            </button>
-                        </div>
-
-                        {/* Bouton d'action proéminent : Nouvelle Facture */}
-                        <div className="portal-sidebar-action-box">
-                            <Link
-                                href="/portal/invoices/create"
-                                className="btn-action-new-invoice"
-                                title="Créer une nouvelle facture"
-                                aria-label="Créer une nouvelle facture"
-                            >
-                                <span className="action-icon" aria-hidden="true">
-                                    <Plus size={16} aria-hidden="true" />
-                                </span>
-                                {!isCollapsed && <span className="action-label">Nouvelle Facture</span>}
-                            </Link>
-                        </div>
-
-                        {/* Liens de navigation extensibles */}
-                        <nav id="portal-sidebar-nav" className="portal-sidebar-nav" aria-label="Navigation principale">
-                            <div className="portal-nav-group">
-                                {!isCollapsed && <span className="portal-nav-group-title">Navigation</span>}
-
-                                <Link
-                                    href="/portal-dashboard"
-                                    className={`portal-nav-link ${url.startsWith('/portal-dashboard') || url.startsWith('/portal/dashboard') ? 'active' : ''}`}
-                                    aria-current={url.startsWith('/portal-dashboard') || url.startsWith('/portal/dashboard') ? 'page' : undefined}
-                                    title="Tableau de bord"
-                                >
-                                    <span className="portal-nav-icon" aria-hidden="true">
-                                        <LayoutDashboard size={17} aria-hidden="true" />
-                                    </span>
-                                    <span className={isCollapsed ? 'sr-only' : 'portal-nav-text'}>
-                                        Tableau de bord
-                                    </span>
-                                </Link>
-
-                                <Link
-                                    href="/portal/invoices"
-                                    className={`portal-nav-link ${url.startsWith('/portal/invoices') && !url.includes('/create') ? 'active' : ''}`}
-                                    aria-current={url.startsWith('/portal/invoices') && !url.includes('/create') ? 'page' : undefined}
-                                    title="Mes Factures"
-                                >
-                                    <span className="portal-nav-icon" aria-hidden="true">
-                                        <FileText size={17} aria-hidden="true" />
-                                    </span>
-                                    <span className={isCollapsed ? 'sr-only' : 'portal-nav-text'}>
-                                        Mes Factures
-                                    </span>
-                                </Link>
-                            </div>
-
-                            {/* Section extensible pour les futures fonctionnalités */}
-                            <div className="portal-nav-group">
-                                {!isCollapsed && <span className="portal-nav-group-title">Comptabilité</span>}
-
-                                <span
-                                    className="portal-nav-link disabled"
-                                    aria-disabled="true"
-                                    title="Règlements & Paiements (Bientôt disponible)"
-                                >
-                                    <span className="portal-nav-icon" aria-hidden="true">
-                                        <CreditCard size={17} aria-hidden="true" />
-                                    </span>
-                                    <span className={isCollapsed ? 'sr-only' : 'portal-nav-text'}>
-                                        Règlements
-                                        {!isCollapsed && <span className="badge-coming-soon">Bientôt</span>}
-                                    </span>
-                                </span>
-                            </div>
-                        </nav>
-                    </aside>
-
-                    {/* Zone de contenu principale à droite */}
-                    <main id="main-content" tabIndex={-1} className="portal-content-main">
-                        {children}
-                    </main>
-                </div>
-            </div>
-        </>
+        <AppSidebarLayout
+            title={title}
+            storageKey="dealtoo_portal_sidebar_collapsed"
+            sidebarAriaLabel="Menu latéral de comptabilité"
+            brand={{
+                icon: <Building2 size={16} aria-hidden="true" />,
+                title: orgName,
+                subtitle: 'Portail Entreprise',
+                href: '/portal-dashboard',
+            }}
+            primaryNav={primaryNav}
+            quickSection={quickSection}
+            footerItems={footerItems}
+            topbarContext={orgName}
+            topbarAction={{
+                href: '/portal/invoices/create',
+                label: 'Nouvelle facture',
+                icon: <Plus size={15} aria-hidden="true" />,
+            }}
+            topbarRight={<UserControls auth={auth} logoutUrl="/portal/logout" />}
+        >
+            {children}
+        </AppSidebarLayout>
     );
 }

@@ -38,9 +38,9 @@ export default function Dashboard({ auth, organization, stats }) {
             {/* Bannière de Bienvenue */}
             <div className="admin-banner">
                 <span className="admin-banner-tag">Espace Entreprise</span>
-                <h2 className="admin-banner-heading">
+                <h1 className="admin-banner-heading">
                     Bienvenue sur le portail de {orgName}
-                </h2>
+                </h1>
                 <p className="admin-banner-text">
                     Supervisez en temps réel vos factures, consultez l'historique des règlements et suivez vos échéances financières.
                 </p>

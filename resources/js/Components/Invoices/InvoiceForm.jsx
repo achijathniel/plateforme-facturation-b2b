@@ -194,9 +194,9 @@ export default function InvoiceForm({
                             {isEdit ? '← Retour aux détails de la facture' : '← Retour au tableau de bord'}
                         </Link>
                     </div>
-                    <h2 className="portal-page-title">
+                    <h1 className="portal-page-title">
                         {isEdit ? `Modifier la facture ${invoice?.invoice_number}` : 'Créer une nouvelle facture'}
-                    </h2>
+                    </h1>
                     <p className="portal-page-subtitle">
                         Entreprise émettrice : <strong>{organization?.name}</strong>
                     </p>

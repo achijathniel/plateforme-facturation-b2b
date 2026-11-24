@@ -80,7 +80,7 @@ export default function Index({ auth, organizations, filters = {} }) {
             {/* En-tête */}
             <div className="admin-page-header">
                 <div>
-                    <h2 className="admin-page-title">Gestion des Entreprises</h2>
+                    <h1 className="admin-page-title">Gestion des Entreprises</h1>
                     <p className="admin-page-subtitle">
                         Supervisez, activez et gérez les entreprises clientes et émettrices de la plateforme.
                     </p>

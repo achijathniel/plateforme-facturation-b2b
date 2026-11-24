@@ -24,6 +24,9 @@
 /* 6. Portail entreprise B2B & menu latéral rétractable */
 @import './modules/portal.css';
 
+/* 6.1. Shell unifié sidebar pleine hauteur (Admin & Portail) */
+@import './modules/sidebar-shell.css';
+
 /* 7. Formulaire de facturation dynamique (Création & Édition) */
 @import './modules/invoice-form.css';
 
