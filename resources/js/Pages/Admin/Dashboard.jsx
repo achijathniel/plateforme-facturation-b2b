@@ -1,3 +1,4 @@
+import { BarChart3, CheckCircle2, Clock, Wallet } from 'lucide-react';
 import AdminLayout from '../../Layouts/AdminLayout';
 import MetricCard from '../../Components/MetricCard';
 import StatusBadge from '../../Components/StatusBadge';
@@ -12,7 +13,7 @@ export default function Dashboard({ auth, stats }) {
                     Session Administrateur Active
                 </span>
                 <h2 className="admin-banner-heading">
-                    Bienvenue, {auth?.user?.name} ! <span role="img" aria-hidden="true">👋</span>
+                    Bienvenue, {auth?.user?.name} !
                 </h2>
                 <p className="admin-banner-text">
                     Supervision globale de la facturation B2B. Données consolidées en temps réel sur PostgreSQL 16 avec calculs à précision arbitraire et mise en cache haute performance.
@@ -25,7 +26,7 @@ export default function Dashboard({ auth, stats }) {
                     label="Chiffre d'Affaires Global"
                     value={formatCurrency(stats?.total_billed)}
                     currency="XOF"
-                    icon="💰"
+                    icon={<Wallet size={18} aria-hidden="true" />}
                     subtext="Totalité des factures émises"
                     highlightBlue={true}
                 />
@@ -34,7 +35,7 @@ export default function Dashboard({ auth, stats }) {
                     label="Recouvrement Encaissé"
                     value={formatCurrency(stats?.total_paid)}
                     currency="XOF"
-                    icon="✅"
+                    icon={<CheckCircle2 size={18} aria-hidden="true" />}
                     subtext="Statut 'Payée' acquitté"
                     valueColor="var(--green-text)"
                 />
@@ -43,7 +44,7 @@ export default function Dashboard({ auth, stats }) {
                     label="Montant en Retard"
                     value={formatCurrency(stats?.total_overdue)}
                     currency="XOF"
-                    icon="⏳"
+                    icon={<Clock size={18} aria-hidden="true" />}
                     subtext="Factures échues non soldées"
                     valueColor="var(--rose-text)"
                 />
@@ -51,7 +52,7 @@ export default function Dashboard({ auth, stats }) {
                 <MetricCard
                     label="Volume d'Activité"
                     value={formatNumber(stats?.total_invoices_count)}
-                    icon="📊"
+                    icon={<BarChart3 size={18} aria-hidden="true" />}
                     subtext={`Réparties sur ${formatNumber(stats?.total_organizations_count)} entreprises clientes`}
                     highlightBlue={true}
                 />

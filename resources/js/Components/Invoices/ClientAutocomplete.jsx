@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Check, Landmark, Mail, Phone } from 'lucide-react';
 import useDebounce from '../../Hooks/useDebounce';
 
 /**
@@ -202,7 +203,10 @@ export default function ClientAutocomplete({
 
                 {clientId && (
                     <div className="client-badge-attached">
-                        <span>✓ Client sélectionné dans l'annuaire</span>
+                        <span className="client-badge-attached-label">
+                            <Check size={13} aria-hidden="true" />
+                            <span>Client sélectionné dans l'annuaire</span>
+                        </span>
                         <button
                             type="button"
                             onClick={handleDetach}
@@ -245,9 +249,9 @@ export default function ClientAutocomplete({
                                 >
                                     <div className="client-autocomplete-item-name">{client.name}</div>
                                     <div className="client-autocomplete-item-meta">
-                                        {client.email && <span><span aria-hidden="true">📧</span> {client.email}</span>}
-                                        {client.phone && <span><span aria-hidden="true">📞</span> {client.phone}</span>}
-                                        {client.tax_number && <span><span aria-hidden="true">🏛️</span> NIF: {client.tax_number}</span>}
+                                        {client.email && <span><Mail size={12} aria-hidden="true" />{client.email}</span>}
+                                        {client.phone && <span><Phone size={12} aria-hidden="true" />{client.phone}</span>}
+                                        {client.tax_number && <span><Landmark size={12} aria-hidden="true" />NIF: {client.tax_number}</span>}
                                     </div>
                                 </li>
                             ))

@@ -1,4 +1,5 @@
 import { Link, router } from '@inertiajs/react';
+import { CheckCircle2, FileText, Landmark, Pause, Pencil, Play, Users, Wallet } from 'lucide-react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import MetricCard from '../../../Components/MetricCard';
 import StatusBadge from '../../../Components/StatusBadge';
@@ -93,7 +94,8 @@ export default function Show({ auth, organization }) {
                         style={{ textDecoration: 'none' }}
                         aria-label={`Modifier les informations de ${organization.name}`}
                     >
-                        <span aria-hidden="true">✏️</span> Modifier
+                        <Pencil size={14} aria-hidden="true" />
+                        <span>Modifier</span>
                     </Link>
                     <button
                         type="button"
@@ -101,8 +103,10 @@ export default function Show({ auth, organization }) {
                         className={`btn-secondary ${organization.is_active ? 'is-active-btn' : ''}`}
                         aria-label={`${organization.is_active ? 'Suspendre' : 'Activer'} ${organization.name}`}
                     >
-                        <span aria-hidden="true">{organization.is_active ? '⏸️' : '▶️'}</span>{' '}
-                        {organization.is_active ? 'Suspendre' : 'Activer'}
+                        {organization.is_active
+                            ? <Pause size={14} aria-hidden="true" />
+                            : <Play size={14} aria-hidden="true" />}
+                        <span>{organization.is_active ? 'Suspendre' : 'Activer'}</span>
                     </button>
                 </div>
             </div>
@@ -113,27 +117,27 @@ export default function Show({ auth, organization }) {
                     label="Total Facturé"
                     value={formatCurrency(organization.total_billed || 0)}
                     currency="XOF"
-                    icon="💰"
+                    icon={<Wallet size={18} aria-hidden="true" />}
                     subtext="Chiffre d'affaires émis"
                 />
                 <MetricCard
                     label="Total Encaissé"
                     value={formatCurrency(organization.total_paid || 0)}
                     currency="XOF"
-                    icon="✅"
+                    icon={<CheckCircle2 size={18} aria-hidden="true" />}
                     subtext="Factures réglées"
                     valueColor="var(--green-text)"
                 />
                 <MetricCard
                     label="Factures Émises"
                     value={organization.invoices_count || 0}
-                    icon="📑"
+                    icon={<FileText size={18} aria-hidden="true" />}
                     subtext="Historique complet"
                 />
                 <MetricCard
                     label="Utilisateurs"
                     value={organization.users_count || 0}
-                    icon="👥"
+                    icon={<Users size={18} aria-hidden="true" />}
                     subtext="Comptes rattachés"
                 />
             </div>
@@ -142,7 +146,7 @@ export default function Show({ auth, organization }) {
             <div className="org-info-card" style={{ marginBottom: '24px' }}>
                 <div className="org-info-card-header">
                     <h3 className="org-info-card-title">
-                        <span aria-hidden="true">🏛️</span>
+                        <Landmark size={18} aria-hidden="true" />
                         <span>Identité Juridique & Coordonnées</span>
                     </h3>
                 </div>
@@ -184,7 +188,7 @@ export default function Show({ auth, organization }) {
                 <div className="data-card">
                     <div className="org-info-card-header" style={{ padding: '16px 20px', margin: 0 }}>
                         <h3 className="org-info-card-title">
-                            <span aria-hidden="true">👥</span>
+                            <Users size={18} aria-hidden="true" />
                             <span>Utilisateurs Rattachés ({organization.users?.length || 0})</span>
                         </h3>
                     </div>
@@ -228,7 +232,7 @@ export default function Show({ auth, organization }) {
                 <div className="data-card">
                     <div className="org-info-card-header" style={{ padding: '16px 20px', margin: 0 }}>
                         <h3 className="org-info-card-title">
-                            <span aria-hidden="true">📑</span>
+                            <FileText size={18} aria-hidden="true" />
                             <span>Dernières Factures Émises</span>
                         </h3>
                     </div>

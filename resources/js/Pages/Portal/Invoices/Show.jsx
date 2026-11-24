@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, router } from '@inertiajs/react';
+import { Pencil, Printer, Send } from 'lucide-react';
 import PortalLayout from '../../../Layouts/PortalLayout';
 import StatusBadge from '../../../Components/StatusBadge';
 import { confirmAction } from '../../../Utils/confirmAction';
@@ -95,7 +96,7 @@ export default function Show({ auth, organization, invoice }) {
                             className="btn-print-invoice"
                             title="Imprimer ou enregistrer au format PDF"
                         >
-                            <span aria-hidden="true">🖨️</span>
+                            <Printer size={15} aria-hidden="true" />
                             <span>Imprimer la facture</span>
                         </button>
 
@@ -105,7 +106,7 @@ export default function Show({ auth, organization, invoice }) {
                                 className="btn-edit-invoice"
                                 title="Modifier cette facture"
                             >
-                                <span aria-hidden="true">✏️</span>
+                                <Pencil size={15} aria-hidden="true" />
                                 <span>Modifier</span>
                             </Link>
                         )}
@@ -118,7 +119,7 @@ export default function Show({ auth, organization, invoice }) {
                                 className="btn-send-invoice"
                                 title="Émettre et transmettre la facture au client"
                             >
-                                <span aria-hidden="true">✉️</span>
+                                <Send size={15} aria-hidden="true" />
                                 <span>{isSending ? 'Envoi en cours...' : 'Envoyer au client'}</span>
                             </button>
                         )}

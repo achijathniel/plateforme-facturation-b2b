@@ -1,10 +1,11 @@
+import { Building2 } from 'lucide-react';
 import LoginForm from '../../../Components/Auth/LoginForm';
 
 export default function Login() {
     return (
         <LoginForm
             title="Connexion Portail Entreprise"
-            badgeIcon="🏢"
+            badgeIcon={<Building2 size={26} aria-hidden="true" />}
             headingTitle="Portail Entreprise B2B"
             headingSubtitle="Espace comptabilité et gestion des factures de votre entreprise"
             emailLabel="Adresse Email Professionnelle"

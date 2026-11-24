@@ -1,3 +1,4 @@
+import { Save, Send } from 'lucide-react';
 import { formatCurrency } from '../../Utils/formatters';
 
 /**
@@ -49,7 +50,7 @@ export default function InvoiceSummaryCard({
                     disabled={processing}
                     className="btn-save-draft"
                 >
-                    <span aria-hidden="true">💾</span>
+                    <Save size={16} aria-hidden="true" />
                     <span>
                         {processing && action === 'draft'
                             ? 'Enregistrement...'
@@ -65,7 +66,7 @@ export default function InvoiceSummaryCard({
                     disabled={processing}
                     className="btn-emit-send"
                 >
-                    <span aria-hidden="true">🚀</span>
+                    <Send size={16} aria-hidden="true" />
                     <span>
                         {processing && action === 'send'
                             ? 'Transmission en cours...'

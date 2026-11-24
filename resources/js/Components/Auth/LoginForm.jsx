@@ -5,7 +5,7 @@ import { Head, useForm } from '@inertiajs/react';
  *
  * @param {{
  *     title: string,
- *     badgeIcon: string,
+ *     badgeIcon: React.ReactNode,
  *     headingTitle: string,
  *     headingSubtitle: string,
  *     emailLabel: string,

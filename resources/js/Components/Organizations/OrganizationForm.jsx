@@ -1,4 +1,5 @@
 import { useForm, Link } from '@inertiajs/react';
+import { Save } from 'lucide-react';
 
 /**
  * Composant formulaire unifié pour la création et l'édition d'une entreprise / organisation.
@@ -230,7 +231,7 @@ export default function OrganizationForm({
                         Annuler
                     </Link>
                     <button type="submit" disabled={processing} className="btn-primary">
-                        <span aria-hidden="true">💾</span>
+                        <Save size={16} aria-hidden="true" />
                         <span>
                             {processing
                                 ? 'Enregistrement en cours...'

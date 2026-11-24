@@ -439,6 +439,16 @@
     gap: 12px;
 }
 
+.client-autocomplete-item-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.client-autocomplete-item-meta svg {
+    flex-shrink: 0;
+}
+
 .client-autocomplete-empty {
     padding: 12px 14px;
     font-size: 12px;
@@ -458,6 +468,12 @@
     font-size: 12px;
     font-weight: 600;
     margin-top: 6px;
+}
+
+.client-badge-attached-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .client-badge-detach {

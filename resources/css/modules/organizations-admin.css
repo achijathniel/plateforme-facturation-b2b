@@ -61,6 +61,11 @@
     gap: 8px;
 }
 
+.org-info-card-title svg {
+    color: var(--blue-primary);
+    flex-shrink: 0;
+}
+
 .org-details-list {
     display: flex;
     flex-direction: column;
@@ -98,6 +103,9 @@
 
 /* Bouton de bascule de statut */
 .btn-toggle-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     padding: 6px 12px;
     font-size: 12px;
     font-weight: 600;

@@ -5,7 +5,7 @@
  *     label: string,
  *     value: string|number,
  *     currency?: string,
- *     icon: string,
+ *     icon: React.ReactNode,
  *     subtext?: string,
  *     highlightBlue?: boolean,
  *     valueColor?: string
@@ -24,8 +24,8 @@ export default function MetricCard({
         <div className="metric-card">
             <div className="metric-card-top">
                 <span className="metric-label">{label}</span>
-                <div className="metric-icon-box">
-                    <span role="img" aria-hidden="true">{icon}</span>
+                <div className="metric-icon-box" aria-hidden="true">
+                    {icon}
                 </div>
             </div>
             <p className="metric-value" style={valueColor ? { color: valueColor } : undefined}>

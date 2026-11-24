@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
+import { Building2, ChevronLeft, ChevronRight, CreditCard, FileText, LayoutDashboard, Plus } from 'lucide-react';
 import FlashMessages from '../Components/FlashMessages';
 import UserControls from '../Components/UserControls';
 
@@ -56,8 +57,8 @@ export default function PortalLayout({ auth, title, organization, children }) {
                 <header className="admin-header portal-header-top">
                     <div className="admin-header-inner">
                         <div className="admin-brand">
-                            <div className="admin-brand-icon">
-                                <span role="img" aria-hidden="true">🏢</span>
+                            <div className="admin-brand-icon" aria-hidden="true">
+                                <Building2 size={18} aria-hidden="true" />
                             </div>
                             <div>
                                 <h1 className="admin-brand-title">
@@ -91,7 +92,7 @@ export default function PortalLayout({ auth, title, organization, children }) {
                                 aria-label={isCollapsed ? 'Déplier le menu latéral' : 'Replier le menu latéral'}
                             >
                                 <span className="toggle-icon" aria-hidden="true">
-                                    {isCollapsed ? '▶' : '◀'}
+                                    {isCollapsed ? <ChevronRight size={14} aria-hidden="true" /> : <ChevronLeft size={14} aria-hidden="true" />}
                                 </span>
                                 {!isCollapsed && <span className="toggle-label">Replier</span>}
                             </button>
@@ -105,7 +106,9 @@ export default function PortalLayout({ auth, title, organization, children }) {
                                 title="Créer une nouvelle facture"
                                 aria-label="Créer une nouvelle facture"
                             >
-                                <span className="action-icon" aria-hidden="true">➕</span>
+                                <span className="action-icon" aria-hidden="true">
+                                    <Plus size={16} aria-hidden="true" />
+                                </span>
                                 {!isCollapsed && <span className="action-label">Nouvelle Facture</span>}
                             </Link>
                         </div>
@@ -121,7 +124,9 @@ export default function PortalLayout({ auth, title, organization, children }) {
                                     aria-current={url.startsWith('/portal-dashboard') || url.startsWith('/portal/dashboard') ? 'page' : undefined}
                                     title="Tableau de bord"
                                 >
-                                    <span className="portal-nav-icon" aria-hidden="true">📊</span>
+                                    <span className="portal-nav-icon" aria-hidden="true">
+                                        <LayoutDashboard size={17} aria-hidden="true" />
+                                    </span>
                                     <span className={isCollapsed ? 'sr-only' : 'portal-nav-text'}>
                                         Tableau de bord
                                     </span>
@@ -133,7 +138,9 @@ export default function PortalLayout({ auth, title, organization, children }) {
                                     aria-current={url.startsWith('/portal/invoices') && !url.includes('/create') ? 'page' : undefined}
                                     title="Mes Factures"
                                 >
-                                    <span className="portal-nav-icon" aria-hidden="true">📑</span>
+                                    <span className="portal-nav-icon" aria-hidden="true">
+                                        <FileText size={17} aria-hidden="true" />
+                                    </span>
                                     <span className={isCollapsed ? 'sr-only' : 'portal-nav-text'}>
                                         Mes Factures
                                     </span>
@@ -149,7 +156,9 @@ export default function PortalLayout({ auth, title, organization, children }) {
                                     aria-disabled="true"
                                     title="Règlements & Paiements (Bientôt disponible)"
                                 >
-                                    <span className="portal-nav-icon" aria-hidden="true">💳</span>
+                                    <span className="portal-nav-icon" aria-hidden="true">
+                                        <CreditCard size={17} aria-hidden="true" />
+                                    </span>
                                     <span className={isCollapsed ? 'sr-only' : 'portal-nav-text'}>
                                         Règlements
                                         {!isCollapsed && <span className="badge-coming-soon">Bientôt</span>}

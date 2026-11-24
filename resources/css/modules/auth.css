@@ -27,7 +27,7 @@
     border-radius: var(--radius-md);
     background-color: var(--blue-bg-light);
     border: 1.5px solid var(--blue-border-subtle);
-    font-size: 26px;
+    color: var(--blue-primary);
     margin-bottom: 16px;
     box-shadow: var(--shadow-sm);
 }

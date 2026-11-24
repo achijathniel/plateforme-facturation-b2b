@@ -1,4 +1,5 @@
 import { Link, router } from '@inertiajs/react';
+import { AlertTriangle, CheckCircle2, CreditCard, FileText } from 'lucide-react';
 import PortalLayout from '../../Layouts/PortalLayout';
 import MetricCard from '../../Components/MetricCard';
 import StatusBadge from '../../Components/StatusBadge';
@@ -51,7 +52,7 @@ export default function Dashboard({ auth, organization, stats }) {
                     label="Total Facturé"
                     value={formatCurrency(stats?.total_billed)}
                     currency="XOF"
-                    icon="💳"
+                    icon={<CreditCard size={18} aria-hidden="true" />}
                     subtext="Cumul des factures émises"
                 />
 
@@ -59,7 +60,7 @@ export default function Dashboard({ auth, organization, stats }) {
                     label="Total Réglé"
                     value={formatCurrency(stats?.total_paid)}
                     currency="XOF"
-                    icon="✅"
+                    icon={<CheckCircle2 size={18} aria-hidden="true" />}
                     subtext="Paiements confirmés"
                     valueColor="var(--green-text)"
                 />
@@ -68,7 +69,7 @@ export default function Dashboard({ auth, organization, stats }) {
                     label="Reste à Payer / Échu"
                     value={formatCurrency(stats?.total_overdue)}
                     currency="XOF"
-                    icon="⚠️"
+                    icon={<AlertTriangle size={18} aria-hidden="true" />}
                     subtext="Montant en attente de règlement"
                     valueColor="var(--rose-text)"
                 />
@@ -76,7 +77,7 @@ export default function Dashboard({ auth, organization, stats }) {
                 <MetricCard
                     label="Factures Enregistrées"
                     value={stats?.total_invoices_count || 0}
-                    icon="📄"
+                    icon={<FileText size={18} aria-hidden="true" />}
                     subtext="Volume global de factures"
                 />
             </div>
@@ -159,7 +160,7 @@ export default function Dashboard({ auth, organization, stats }) {
                                     <td colSpan={6} className="table-empty-cell">
                                         <div className="table-empty-state">
                                             <span className="empty-state-icon" aria-hidden="true">
-                                                📄
+                                                <FileText size={32} aria-hidden="true" />
                                             </span>
                                             <p className="empty-state-title">
                                                 Aucune facture disponible

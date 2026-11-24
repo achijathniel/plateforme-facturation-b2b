@@ -83,8 +83,9 @@
 }
 
 .toggle-icon {
-    font-size: 10px;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .toggle-label {
@@ -132,7 +133,9 @@
 }
 
 .action-icon {
-    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .action-label {
@@ -205,7 +208,6 @@
 }
 
 .portal-nav-icon {
-    font-size: 16px;
     display: inline-flex;
     align-items: center;
     justify-content: center;

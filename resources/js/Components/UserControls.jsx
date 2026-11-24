@@ -14,7 +14,7 @@ export default function UserControls({ auth, logoutUrl }) {
             <div className="admin-profile">
                 <p className="admin-user-name">{auth?.user?.name}</p>
                 <p className="admin-user-badge">
-                    <span className="admin-status-dot" aria-hidden="true">●</span>{' '}
+                    <span className="admin-status-dot" aria-hidden="true" />
                     <span>{auth?.user?.role?.toUpperCase()}</span>
                 </p>
             </div>

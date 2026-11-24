@@ -1,4 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
+import { Briefcase, Building2, FileText, LayoutDashboard } from 'lucide-react';
 import FlashMessages from '../Components/FlashMessages';
 import UserControls from '../Components/UserControls';
 
@@ -30,8 +31,8 @@ export default function AdminLayout({ auth, title, children }) {
                 <header className="admin-header">
                     <div className="admin-header-inner">
                         <div className="admin-brand">
-                            <div className="admin-brand-icon">
-                                <span role="img" aria-hidden="true">💼</span>
+                            <div className="admin-brand-icon" aria-hidden="true">
+                                <Briefcase size={18} aria-hidden="true" />
                             </div>
                             <div>
                                 <h1 className="admin-brand-title">
@@ -48,7 +49,7 @@ export default function AdminLayout({ auth, title, children }) {
                                 className={`admin-nav-link ${url === '/admin/dashboard' ? 'active' : ''}`}
                                 aria-current={url === '/admin/dashboard' ? 'page' : undefined}
                             >
-                                <span role="img" aria-hidden="true">📊</span>
+                                <LayoutDashboard size={16} aria-hidden="true" />
                                 <span>Tableau de bord</span>
                             </Link>
                             <Link
@@ -56,7 +57,7 @@ export default function AdminLayout({ auth, title, children }) {
                                 className={`admin-nav-link ${url.startsWith('/admin/organizations') ? 'active' : ''}`}
                                 aria-current={url.startsWith('/admin/organizations') ? 'page' : undefined}
                             >
-                                <span role="img" aria-hidden="true">🏢</span>
+                                <Building2 size={16} aria-hidden="true" />
                                 <span>Entreprises</span>
                             </Link>
                             <Link
@@ -64,7 +65,7 @@ export default function AdminLayout({ auth, title, children }) {
                                 className={`admin-nav-link ${url.startsWith('/admin/invoices') ? 'active' : ''}`}
                                 aria-current={url.startsWith('/admin/invoices') ? 'page' : undefined}
                             >
-                                <span role="img" aria-hidden="true">📑</span>
+                                <FileText size={16} aria-hidden="true" />
                                 <span>Factures</span>
                             </Link>
                         </nav>

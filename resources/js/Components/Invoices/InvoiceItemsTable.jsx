@@ -1,3 +1,4 @@
+import { Plus, Trash2 } from 'lucide-react';
 import { formatCurrency } from '../../Utils/formatters';
 
 /**
@@ -33,7 +34,7 @@ export default function InvoiceItemsTable({
                     className="btn-add-line"
                     aria-label="Ajouter une nouvelle ligne d'article"
                 >
-                    <span aria-hidden="true">➕</span>
+                    <Plus size={15} aria-hidden="true" />
                     <span>Ajouter une ligne</span>
                 </button>
             </div>
@@ -146,7 +147,7 @@ export default function InvoiceItemsTable({
                                             }
                                             aria-label={`Supprimer la ligne ${index + 1}`}
                                         >
-                                            <span aria-hidden="true">🗑️</span>
+                                            <Trash2 size={15} aria-hidden="true" />
                                         </button>
                                     </td>
                                 </tr>

@@ -1,4 +1,5 @@
 import { Link, router } from '@inertiajs/react';
+import { Eye, FileText, Plus, Search, X } from 'lucide-react';
 import PortalLayout from '../../../Layouts/PortalLayout';
 import StatusBadge from '../../../Components/StatusBadge';
 import Pagination from '../../../Components/Pagination';
@@ -62,7 +63,7 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
                         href="/portal/invoices/create"
                         className="btn-action-new-invoice"
                     >
-                        <span aria-hidden="true">➕</span>
+                        <Plus size={16} aria-hidden="true" />
                         <span>Nouvelle Facture</span>
                     </Link>
                 </div>
@@ -76,7 +77,9 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
                             Rechercher par numéro de facture
                         </label>
                         <div className="search-input-wrapper">
-                            <span className="search-icon" aria-hidden="true">🔍</span>
+                            <span className="search-icon" aria-hidden="true">
+                                <Search size={15} aria-hidden="true" />
+                            </span>
                             <input
                                 id="portal-search-input"
                                 type="search"
@@ -119,7 +122,8 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
                             className="btn-reset-filter"
                             aria-label="Réinitialiser les filtres"
                         >
-                            ✕ Réinitialiser
+                            <X size={13} aria-hidden="true" />
+                            <span>Réinitialiser</span>
                         </button>
                     )}
                 </form>
@@ -156,7 +160,9 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
                                     <td colSpan="7" className="table-empty-cell">
                                         <div className="table-empty-state">
                                             <span className="empty-state-icon" aria-hidden="true">
-                                                {hasActiveFilters ? '🔍' : '📑'}
+                                                {hasActiveFilters
+                                                    ? <Search size={32} aria-hidden="true" />
+                                                    : <FileText size={32} aria-hidden="true" />}
                                             </span>
                                             <p className="empty-state-title">
                                                 {hasActiveFilters
@@ -244,7 +250,7 @@ export default function Index({ auth, organization, invoices, filters = {}, stat
                                                 className="btn-table-action-view"
                                                 aria-label={`Consulter la facture ${invoice.invoice_number}`}
                                             >
-                                                <span aria-hidden="true">👁️</span>
+                                                <Eye size={14} aria-hidden="true" />
                                                 <span>Consulter</span>
                                             </Link>
                                         </td>

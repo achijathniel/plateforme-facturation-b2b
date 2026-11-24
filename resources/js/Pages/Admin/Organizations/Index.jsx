@@ -1,4 +1,5 @@
 import { Link, router } from '@inertiajs/react';
+import { Building2, Eye, FileSpreadsheet, Pause, Pencil, Play, Plus, Search, X } from 'lucide-react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import Pagination from '../../../Components/Pagination';
 import { confirmAction } from '../../../Utils/confirmAction';
@@ -89,14 +90,14 @@ export default function Index({ auth, organizations, filters = {} }) {
                         href="/admin/organizations/import"
                         className="btn-secondary"
                     >
-                        <span aria-hidden="true">📥</span>
+                        <FileSpreadsheet size={15} aria-hidden="true" />
                         <span>Importer Excel</span>
                     </Link>
                     <Link
                         href="/admin/organizations/create"
                         className="btn-primary"
                     >
-                        <span aria-hidden="true">➕</span>
+                        <Plus size={16} aria-hidden="true" />
                         <span>Nouvelle entreprise</span>
                     </Link>
                 </div>
@@ -110,7 +111,9 @@ export default function Index({ auth, organizations, filters = {} }) {
                             Rechercher une entreprise
                         </label>
                         <div className="search-input-wrapper">
-                            <span className="search-icon" aria-hidden="true">🔍</span>
+                            <span className="search-icon" aria-hidden="true">
+                                <Search size={15} aria-hidden="true" />
+                            </span>
                             <input
                                 id="search-org"
                                 type="text"
@@ -148,7 +151,8 @@ export default function Index({ auth, organizations, filters = {} }) {
                             className="btn-reset-filter"
                             title="Réinitialiser tous les filtres"
                         >
-                            ✕ Effacer les filtres
+                            <X size={13} aria-hidden="true" />
+                            <span>Effacer les filtres</span>
                         </button>
                     )}
                 </form>
@@ -247,7 +251,8 @@ export default function Index({ auth, organizations, filters = {} }) {
                                                     title="Consulter la fiche 360°"
                                                     aria-label={`Consulter la fiche 360° de ${org.name}`}
                                                 >
-                                                    <span aria-hidden="true">👁️</span> Voir
+                                                    <Eye size={14} aria-hidden="true" />
+                                                    <span>Voir</span>
                                                 </Link>
                                                 <Link
                                                     href={`/admin/organizations/${org.id}/edit`}
@@ -255,7 +260,8 @@ export default function Index({ auth, organizations, filters = {} }) {
                                                     title="Modifier l'entreprise"
                                                     aria-label={`Modifier l'entreprise ${org.name}`}
                                                 >
-                                                    <span aria-hidden="true">✏️</span> Modifier
+                                                    <Pencil size={14} aria-hidden="true" />
+                                                    <span>Modifier</span>
                                                 </Link>
                                                 <button
                                                     type="button"
@@ -264,8 +270,10 @@ export default function Index({ auth, organizations, filters = {} }) {
                                                     title={org.is_active ? "Suspendre l'accès" : "Réactiver l'accès"}
                                                     aria-label={`${org.is_active ? 'Suspendre' : 'Activer'} l'entreprise ${org.name}`}
                                                 >
-                                                    <span aria-hidden="true">{org.is_active ? '⏸️' : '▶️'}</span>{' '}
-                                                    {org.is_active ? 'Suspendre' : 'Activer'}
+                                                    {org.is_active
+                                                        ? <Pause size={14} aria-hidden="true" />
+                                                        : <Play size={14} aria-hidden="true" />}
+                                                    <span>{org.is_active ? 'Suspendre' : 'Activer'}</span>
                                                 </button>
                                             </div>
                                         </td>
@@ -275,7 +283,9 @@ export default function Index({ auth, organizations, filters = {} }) {
                                 <tr>
                                     <td colSpan={7} className="table-empty-cell">
                                         <div className="table-empty-state">
-                                            <span className="empty-state-icon" aria-hidden="true">🏢</span>
+                                            <span className="empty-state-icon" aria-hidden="true">
+                                                <Building2 size={32} aria-hidden="true" />
+                                            </span>
                                             <p className="empty-state-title">Aucune entreprise trouvée</p>
                                             <p className="empty-state-text">
                                                 {hasActiveFilters

@@ -1,10 +1,11 @@
+import { Briefcase } from 'lucide-react';
 import LoginForm from '../../../Components/Auth/LoginForm';
 
 export default function Login() {
     return (
         <LoginForm
             title="Connexion Administration"
-            badgeIcon="💼"
+            badgeIcon={<Briefcase size={26} aria-hidden="true" />}
             headingTitle="Dealtoo Billing B2B"
             headingSubtitle="Espace d'administration et supervision financière"
             emailLabel="Adresse Email Administrateur"

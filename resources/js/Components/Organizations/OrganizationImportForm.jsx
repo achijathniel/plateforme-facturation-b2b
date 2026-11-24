@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { Link, useForm } from '@inertiajs/react';
+import { Download, Upload } from 'lucide-react';
 import OrganizationImportReport from './OrganizationImportReport';
 
 /**
@@ -77,7 +78,7 @@ export default function OrganizationImportForm({ importReport = null }) {
                         className="btn-secondary import-download-btn"
                         download="modele-import-entreprises.xlsx"
                     >
-                        <span aria-hidden="true">⬇️</span>
+                        <Download size={15} aria-hidden="true" />
                         <span>Télécharger le modèle Excel (.xlsx)</span>
                     </a>
                 </div>
@@ -189,7 +190,7 @@ export default function OrganizationImportForm({ importReport = null }) {
                         disabled={processing}
                         className="btn-primary"
                     >
-                        <span aria-hidden="true">📤</span>
+                        <Upload size={16} aria-hidden="true" />
                         <span>{processing ? 'Importation en cours...' : "Lancer l'import"}</span>
                     </button>
                 </div>

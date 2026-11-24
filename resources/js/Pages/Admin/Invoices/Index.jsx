@@ -1,3 +1,4 @@
+import { FileText, Search, X } from 'lucide-react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import StatusBadge from '../../../Components/StatusBadge';
 import Pagination from '../../../Components/Pagination';
@@ -67,7 +68,9 @@ export default function InvoicesIndex({ auth, invoices, filters = {}, statuses =
                             Rechercher une facture
                         </label>
                         <div className="search-input-wrapper">
-                            <span className="search-icon" aria-hidden="true">🔍</span>
+                            <span className="search-icon" aria-hidden="true">
+                                <Search size={15} aria-hidden="true" />
+                            </span>
                             <input
                                 id="search-input"
                                 type="text"
@@ -130,7 +133,8 @@ export default function InvoicesIndex({ auth, invoices, filters = {}, statuses =
                             className="btn-reset-filter"
                             title="Réinitialiser tous les filtres"
                         >
-                            ✕ Effacer les filtres
+                            <X size={13} aria-hidden="true" />
+                            <span>Effacer les filtres</span>
                         </button>
                     )}
                 </form>
@@ -184,7 +188,7 @@ export default function InvoicesIndex({ auth, invoices, filters = {}, statuses =
                                     <td colSpan={6} className="table-empty-cell">
                                         <div className="table-empty-state">
                                             <span className="empty-state-icon" aria-hidden="true">
-                                                📄
+                                                <FileText size={32} aria-hidden="true" />
                                             </span>
                                             <p className="empty-state-title">
                                                 Aucune facture trouvée
