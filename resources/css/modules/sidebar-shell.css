@@ -359,7 +359,7 @@
     border-bottom: 1px solid var(--border-light);
     position: sticky;
     top: 0;
-    z-index: 30;
+    z-index: 45;
 }
 
 .app-topbar-left {
@@ -497,14 +497,6 @@
         gap: 8px;
     }
 
-    .app-topbar-right .admin-user-controls {
-        gap: 8px;
-    }
-
-    .app-topbar-right .admin-profile {
-        max-width: 108px;
-    }
-
     .app-topbar-cta {
         padding: 7px 10px;
     }
@@ -522,8 +514,173 @@
     }
 }
 
-@media (max-width: 420px) {
-    .app-topbar-right .admin-profile {
-        display: none;
-    }
+/* ==========================================================================
+   4. MENU PROFIL CIRCULAIRE & POPOVER D'INFORMATIONS (USER CONTROLS)
+   ========================================================================== */
+.user-menu {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.user-menu-trigger {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-full);
+    background-color: var(--blue-bg-light);
+    border: 1px solid var(--blue-border-subtle);
+    color: var(--blue-primary);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.user-menu-trigger:hover,
+.user-menu-trigger[aria-expanded="true"] {
+    border-color: var(--blue-border);
+    background-color: var(--bg-surface);
+    color: var(--blue-hover);
+}
+
+.user-menu-online-dot {
+    position: absolute;
+    right: 1px;
+    bottom: 1px;
+    width: 9px;
+    height: 9px;
+    border-radius: var(--radius-full);
+    background-color: var(--dot-emerald);
+    border: 2px solid var(--bg-surface);
+}
+
+.user-menu-popover {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 272px;
+    max-width: calc(100vw - 32px);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    z-index: 50;
+    overflow: hidden;
+}
+
+.user-menu-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background-color: var(--bg-page);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.user-menu-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    border-radius: var(--radius-full);
+    background-color: var(--blue-bg-light);
+    border: 1px solid var(--blue-border-subtle);
+    color: var(--blue-primary);
+}
+
+.user-menu-identity {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 2px;
+}
+
+.user-menu-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-menu-role {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--blue-hover);
+    letter-spacing: 0.04em;
+}
+
+.user-menu-role-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-full);
+    background-color: var(--dot-emerald);
+    flex-shrink: 0;
+}
+
+.user-menu-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.user-menu-detail-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    min-width: 0;
+}
+
+.user-menu-detail-row svg {
+    color: var(--text-muted);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.user-menu-detail-text {
+    overflow-wrap: anywhere;
+    line-height: 1.35;
+}
+
+.user-menu-footer {
+    padding: 6px;
+}
+
+.user-menu-logout {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 10px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    text-align: left;
+    transition: var(--transition);
+}
+
+.user-menu-logout svg {
+    flex-shrink: 0;
+}
+
+.user-menu-logout:hover {
+    background-color: var(--rose-bg);
+    color: var(--rose-text);
 }

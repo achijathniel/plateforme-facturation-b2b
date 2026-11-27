@@ -16,7 +16,7 @@ import { buildInvoiceStatusQuickItems, parseInertiaUrl } from '../Utils/navigati
  * Délègue le menu latéral pleine hauteur au composant partagé AppSidebarLayout.
  *
  * @param {{
- *     auth: { user?: { name: string, role: string, organization?: { id: number, name: string } } },
+ *     auth: { user?: { name: string, email?: string, role?: string, organization?: { id: number, name: string }|null } },
  *     title?: string,
  *     organization?: { id: number, name: string },
  *     children: React.ReactNode
