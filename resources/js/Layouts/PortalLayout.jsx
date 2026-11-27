@@ -4,7 +4,6 @@ import {
     CreditCard,
     FileText,
     LayoutDashboard,
-    LogOut,
     Plus,
 } from 'lucide-react';
 import AppSidebarLayout from '../Components/Layout/AppSidebarLayout';
@@ -72,18 +71,6 @@ export default function PortalLayout({ auth, title, organization, children }) {
         }),
     };
 
-    const footerItems = [
-        {
-            key: 'portal-logout',
-            label: 'Déconnexion',
-            href: '/portal/logout',
-            method: 'post',
-            as: 'button',
-            icon: <LogOut size={16} aria-hidden="true" />,
-            danger: true,
-        },
-    ];
-
     return (
         <AppSidebarLayout
             title={title}
@@ -97,7 +84,6 @@ export default function PortalLayout({ auth, title, organization, children }) {
             }}
             primaryNav={primaryNav}
             quickSection={quickSection}
-            footerItems={footerItems}
             topbarContext={orgName}
             topbarAction={{
                 href: '/portal/invoices/create',
