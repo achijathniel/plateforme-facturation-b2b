@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Portal;
 
+use App\DTOs\Dashboard\DashboardFilterDTO;
 use App\DTOs\Portal\PortalDashboardStatsData;
 use App\Repositories\Contracts\PortalDashboardRepositoryInterface;
 use Illuminate\Support\Facades\Cache;
@@ -27,16 +28,22 @@ final readonly class GetPortalDashboardStatsAction
     }
 
     /**
-     * Exécute la récupération des métriques financières et factures de l'organisation
-     * avec mise en cache Redis isolée par organisation.
+     * Récupère les métriques financières et séries analytiques de l'organisation.
+     * La vue par défaut bénéficie du cache Redis isolé par organisation.
      */
-    public function execute(int $organizationId): PortalDashboardStatsData
+    public function execute(int $organizationId, ?DashboardFilterDTO $filter = null): PortalDashboardStatsData
     {
-        $rawMetrics = Cache::remember(
-            self::cacheKey($organizationId),
-            now()->addMinutes(self::CACHE_TTL_MINUTES),
-            fn (): array => $this->repository->getMetricsForOrganization($organizationId),
-        );
+        $activeFilter = $filter ?? new DashboardFilterDTO;
+
+        if ($activeFilter->isDefault()) {
+            $rawMetrics = Cache::remember(
+                self::cacheKey($organizationId),
+                now()->addMinutes(self::CACHE_TTL_MINUTES),
+                fn (): array => $this->repository->getMetricsForOrganization($organizationId, $activeFilter),
+            );
+        } else {
+            $rawMetrics = $this->repository->getMetricsForOrganization($organizationId, $activeFilter);
+        }
 
         return PortalDashboardStatsData::fromRepository($rawMetrics);
     }

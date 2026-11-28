@@ -148,6 +148,44 @@ class FrontendArchitectureTest extends TestCase
     }
 
     /**
+     * Vérifie que les tableaux de bord Admin et Portail sont des Skinny Pages
+     * réutilisant DashboardPageView et les composants analytiques partagés.
+     */
+    public function test_dashboards_reuse_shared_analytics_components(): void
+    {
+        $adminDashboardPath = resource_path('js/Pages/Admin/Dashboard.jsx');
+        $portalDashboardPath = resource_path('js/Pages/Portal/Dashboard.jsx');
+        $sharedViewPath = resource_path('js/Components/Dashboard/DashboardPageView.jsx');
+
+        $this->assertFileExists($sharedViewPath);
+
+        $adminDashboard = (string) file_get_contents($adminDashboardPath);
+        $portalDashboard = (string) file_get_contents($portalDashboardPath);
+        $sharedView = (string) file_get_contents($sharedViewPath);
+
+        $this->assertMatchesRegularExpression('/<DashboardPageView\b/', $adminDashboard);
+        $this->assertMatchesRegularExpression('/<DashboardPageView\b/', $portalDashboard);
+        $this->assertLessThan(75, count(explode("\n", $adminDashboard)));
+        $this->assertLessThan(75, count(explode("\n", $portalDashboard)));
+
+        $sharedComponents = [
+            'DashboardFilterBar',
+            'RevenueTrendChart',
+            'StatusDonutChart',
+            'TopEntitiesChart',
+        ];
+
+        foreach ($sharedComponents as $component) {
+            $this->assertFileExists(resource_path("js/Components/Dashboard/{$component}.jsx"));
+            $this->assertMatchesRegularExpression(
+                "/<{$component}\\b/",
+                $sharedView,
+                "DashboardPageView.jsx doit réutiliser <{$component} />."
+            );
+        }
+    }
+
+    /**
      * Vérifie que le CSS reste modulaire et n'est pas réécrit sous forme de monolithe.
      */
     public function test_css_remains_modular_via_imports(): void

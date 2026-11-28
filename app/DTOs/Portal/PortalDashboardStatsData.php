@@ -4,23 +4,14 @@ declare(strict_types=1);
 
 namespace App\DTOs\Portal;
 
-final readonly class PortalDashboardStatsData
-{
-    /**
-     * @param array<int, array<string, mixed>> $recentInvoices
-     */
-    public function __construct(
-        public string $totalBilled,
-        public string $totalPaid,
-        public string $totalOverdue,
-        public int $totalInvoicesCount,
-        public array $recentInvoices,
-    ) {}
+use App\DTOs\Dashboard\BaseDashboardStatsData;
 
+final readonly class PortalDashboardStatsData extends BaseDashboardStatsData
+{
     /**
      * Crée une instance depuis le résultat du repository.
      *
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public static function fromRepository(array $data): self
     {
@@ -28,7 +19,13 @@ final readonly class PortalDashboardStatsData
             totalBilled: (string) ($data['total_billed'] ?? '0'),
             totalPaid: (string) ($data['total_paid'] ?? '0'),
             totalOverdue: (string) ($data['total_overdue'] ?? '0'),
+            overdueCount: (int) ($data['overdue_count'] ?? 0),
             totalInvoicesCount: (int) ($data['total_invoices'] ?? 0),
+            collectionRate: (float) ($data['collection_rate'] ?? 0.0),
+            averageInvoiceAmount: (string) ($data['average_invoice_amount'] ?? '0.00'),
+            monthlySeries: (array) ($data['monthly_series'] ?? []),
+            statusBreakdown: (array) ($data['status_breakdown'] ?? []),
+            topEntities: (array) ($data['top_entities'] ?? []),
             recentInvoices: (array) ($data['recent_invoices'] ?? []),
         );
     }
@@ -40,12 +37,6 @@ final readonly class PortalDashboardStatsData
      */
     public function toArray(): array
     {
-        return [
-            'total_billed'         => $this->totalBilled,
-            'total_paid'           => $this->totalPaid,
-            'total_overdue'        => $this->totalOverdue,
-            'total_invoices_count' => $this->totalInvoicesCount,
-            'recent_invoices'      => $this->recentInvoices,
-        ];
+        return $this->baseToArray();
     }
 }

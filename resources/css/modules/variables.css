@@ -70,5 +70,14 @@
     --dot-emerald: #047857;
     --dot-rose: #e11d48;
     --dot-amber: #b45309;
+
+    /* Graphiques analytiques (Recharts, contrastes >= 3:1 sur #ffffff et #e2e8f0) */
+    --chart-grid: #e2e8f0;
+    --chart-billed: #2563eb;
+    --chart-paid: #047857;
+    --chart-overdue: #e11d48;
+    --chart-sent: #2563eb;
+    --chart-draft: #64748b;
+    --chart-cancelled: #475569;
 }
 

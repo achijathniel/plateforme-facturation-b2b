@@ -53,6 +53,7 @@ export default function useInertiaFilters({
         valuesRef.current = synced;
         lastSubmittedSearchRef.current = synced[searchKey] ?? '';
         setValues(synced);
+        // initialKey sérialise les valeurs scalaires de initialFilters pour éviter les boucles de rendu liées aux nouvelles références Inertia.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [initialKey, normalizeFromProps, searchKey]);
 

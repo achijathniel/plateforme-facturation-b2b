@@ -1,181 +1,65 @@
-import { Link, router } from '@inertiajs/react';
 import { AlertTriangle, CheckCircle2, CreditCard, FileText } from 'lucide-react';
 import PortalLayout from '../../Layouts/PortalLayout';
-import MetricCard from '../../Components/MetricCard';
-import StatusBadge from '../../Components/StatusBadge';
-import { formatCurrency } from '../../Utils/formatters';
+import DashboardPageView from '../../Components/Dashboard/DashboardPageView';
+import { formatCurrency, formatNumber } from '../../Utils/formatters';
 
-/**
- * Tableau de bord du portail entreprise pour le rôle Comptable / Client.
- * Affiche les métriques financières de l'entreprise connectée et la liste de ses factures récentes.
- *
- * @param {{
- *     auth: { user?: { name: string, role: string, organization?: { id: number, name: string } } },
- *     organization: { id: number, name: string },
- *     stats: {
- *         total_billed: string,
- *         total_paid: string,
- *         total_overdue: string,
- *         total_invoices_count: number,
- *         recent_invoices: Array<{
- *             id: number,
- *             invoice_number: string,
- *             total: string,
- *             currency: string,
- *             status: string,
- *             issue_date: string,
- *             due_date: string,
- *             organization_name?: string
- *         }>
- *     }
- * }} props
- */
-export default function Dashboard({ auth, organization, stats }) {
+export default function Dashboard({ auth, organization, stats, filters = {}, statuses = [] }) {
     const orgName = organization?.name || auth?.user?.organization?.name || 'Votre entreprise';
+
+    const kpis = [
+        {
+            key: 'billed',
+            label: 'Total Facturé',
+            value: formatCurrency(stats?.total_billed),
+            currency: 'XOF',
+            icon: <CreditCard size={18} aria-hidden="true" />,
+            subtext: 'Cumul sur la sélection',
+        },
+        {
+            key: 'paid',
+            label: 'Total Réglé',
+            value: formatCurrency(stats?.total_paid),
+            currency: 'XOF',
+            icon: <CheckCircle2 size={18} aria-hidden="true" />,
+            subtext: `${stats?.collection_rate ?? 0} % encaissé`,
+            valueColor: 'var(--green-text)',
+        },
+        {
+            key: 'overdue',
+            label: 'Reste à Payer / Échu',
+            value: formatCurrency(stats?.total_overdue),
+            currency: 'XOF',
+            icon: <AlertTriangle size={18} aria-hidden="true" />,
+            subtext: `${formatNumber(stats?.overdue_count)} facture(s) échue(s)`,
+            valueColor: 'var(--rose-text)',
+        },
+        {
+            key: 'volume',
+            label: 'Factures Enregistrées',
+            value: formatNumber(stats?.total_invoices_count),
+            icon: <FileText size={18} aria-hidden="true" />,
+            subtext: `Panier moyen : ${formatCurrency(stats?.average_invoice_amount, 'XOF')}`,
+        },
+    ];
 
     return (
         <PortalLayout auth={auth} organization={organization} title={`Tableau de bord - ${orgName}`}>
-            {/* Bannière de Bienvenue */}
-            <div className="admin-banner">
-                <span className="admin-banner-tag">Espace Entreprise</span>
-                <h1 className="admin-banner-heading">
-                    Bienvenue sur le portail de {orgName}
-                </h1>
-                <p className="admin-banner-text">
-                    Supervisez en temps réel vos factures, consultez l'historique des règlements et suivez vos échéances financières.
-                </p>
-            </div>
-
-            {/* Grille des 4 Métriques Financières */}
-            <div className="metrics-grid">
-                <MetricCard
-                    label="Total Facturé"
-                    value={formatCurrency(stats?.total_billed)}
-                    currency="XOF"
-                    icon={<CreditCard size={18} aria-hidden="true" />}
-                    subtext="Cumul des factures émises"
-                />
-
-                <MetricCard
-                    label="Total Réglé"
-                    value={formatCurrency(stats?.total_paid)}
-                    currency="XOF"
-                    icon={<CheckCircle2 size={18} aria-hidden="true" />}
-                    subtext="Paiements confirmés"
-                    valueColor="var(--green-text)"
-                />
-
-                <MetricCard
-                    label="Reste à Payer / Échu"
-                    value={formatCurrency(stats?.total_overdue)}
-                    currency="XOF"
-                    icon={<AlertTriangle size={18} aria-hidden="true" />}
-                    subtext="Montant en attente de règlement"
-                    valueColor="var(--rose-text)"
-                />
-
-                <MetricCard
-                    label="Factures Enregistrées"
-                    value={stats?.total_invoices_count || 0}
-                    icon={<FileText size={18} aria-hidden="true" />}
-                    subtext="Volume global de factures"
-                />
-            </div>
-
-            {/* Tableau des Dernières Factures */}
-            <div className="data-card">
-                <div className="data-card-header">
-                    <div className="data-card-title-group">
-                        <h3 className="data-card-title">Dernières Factures Émises</h3>
-                        <p className="data-card-subtitle">
-                            Historique des 6 dernières factures établies pour votre entreprise.
-                        </p>
-                    </div>
-                </div>
-
-                <div className="data-table-wrapper">
-                    <table className="data-table" aria-label="Liste des dernières factures de l'entreprise">
-                        <thead>
-                            <tr>
-                                <th scope="col">Numéro</th>
-                                <th scope="col">Client</th>
-                                <th scope="col">Date d'Émission</th>
-                                <th scope="col">Échéance</th>
-                                <th scope="col">Montant Total</th>
-                                <th scope="col">Statut</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {stats?.recent_invoices && stats.recent_invoices.length > 0 ? (
-                                stats.recent_invoices.map((invoice) => (
-                                    <tr
-                                        key={invoice.id || invoice.invoice_number}
-                                        className="clickable-row"
-                                        onClick={(e) => {
-                                            const selection = window.getSelection();
-                                            if (selection && selection.toString().length > 0) {
-                                                return;
-                                            }
-
-                                            if (e.target.closest('a, button')) {
-                                                return;
-                                            }
-
-                                            if (invoice.id) {
-                                                router.visit(`/portal/invoices/${invoice.id}`);
-                                            }
-                                        }}
-                                    >
-                                        <td>
-                                            <Link
-                                                href={`/portal/invoices/${invoice.id}`}
-                                                className="link-invoice-num"
-                                                title={`Consulter la facture ${invoice.invoice_number}`}
-                                            >
-                                                {invoice.invoice_number}
-                                            </Link>
-                                        </td>
-                                        <td>
-                                            <strong style={{ color: 'var(--text-primary)' }}>
-                                                {invoice.client_name || '-'}
-                                            </strong>
-                                        </td>
-                                        <td>{invoice.issue_date}</td>
-                                        <td>{invoice.due_date}</td>
-                                        <td>
-                                            <span className="table-amount">
-                                                {formatCurrency(invoice.total)}
-                                            </span>
-                                            <span className="table-currency">
-                                                {invoice.currency || 'XOF'}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <StatusBadge status={invoice.status} />
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan={6} className="table-empty-cell">
-                                        <div className="table-empty-state">
-                                            <span className="empty-state-icon" aria-hidden="true">
-                                                <FileText size={32} aria-hidden="true" />
-                                            </span>
-                                            <p className="empty-state-title">
-                                                Aucune facture disponible
-                                            </p>
-                                            <p className="empty-state-text">
-                                                Aucune facture n'a encore été émise pour votre entreprise.
-                                            </p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <DashboardPageView
+                routeUrl="/portal-dashboard"
+                headingTitle={`Tableau de bord — ${orgName}`}
+                headingSubtitle="Suivez en temps réel votre chiffre d'affaires facturé, vos règlements encaissés et l'évolution de vos principaux clients B2B."
+                stats={stats}
+                filters={filters}
+                statuses={statuses}
+                kpis={kpis}
+                topEntitiesTitle="Top 5 de vos clients B2B"
+                topEntitiesSubtitle="Classement des clients selon le volume facturé sur la période"
+                recentInvoicesSubtitle="Historique des 6 dernières factures correspondant aux filtres actifs."
+                recentInvoicesPartyLabel="Client"
+                recentInvoicesAllUrl="/portal/invoices"
+                recentInvoicesAllLabel="Voir toutes mes factures →"
+                recentInvoicesLinkInvoices={true}
+            />
         </PortalLayout>
     );
 }

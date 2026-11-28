@@ -29,7 +29,7 @@ final class PortalDashboardTest extends TestCase
         $organization = Organization::factory()->create();
         $admin = User::factory()->create([
             'organization_id' => $organization->id,
-            'role'            => UserRole::ADMIN,
+            'role' => UserRole::ADMIN,
         ]);
 
         $response = $this->actingAs($admin)->get(route('portal.dashboard'));
@@ -42,12 +42,12 @@ final class PortalDashboardTest extends TestCase
         $organization = Organization::factory()->create();
         $accountant = User::factory()->create([
             'organization_id' => $organization->id,
-            'role'            => UserRole::ACCOUNTANT,
-            'password'        => bcrypt('password'),
+            'role' => UserRole::ACCOUNTANT,
+            'password' => bcrypt('password'),
         ]);
 
         $response = $this->post(route('portal.login.store'), [
-            'email'    => $accountant->email,
+            'email' => $accountant->email,
             'password' => 'password',
         ]);
 
@@ -62,36 +62,39 @@ final class PortalDashboardTest extends TestCase
 
         $accountantA = User::factory()->create([
             'organization_id' => $orgA->id,
-            'role'            => UserRole::ACCOUNTANT,
+            'role' => UserRole::ACCOUNTANT,
         ]);
 
         // Factures pour Entreprise Alpha
         Invoice::factory()->create([
             'organization_id' => $orgA->id,
-            'invoice_number'  => 'INV-ALPHA-01',
-            'status'          => InvoiceStatus::PAID,
-            'total'           => 1000.00,
-            'currency'        => 'XOF',
-            'issue_date'      => now()->subDays(2),
+            'invoice_number' => 'INV-ALPHA-01',
+            'client_name' => 'Client Abidjan',
+            'status' => InvoiceStatus::PAID,
+            'total' => 1000.00,
+            'currency' => 'XOF',
+            'issue_date' => now()->subDays(2),
         ]);
 
         Invoice::factory()->create([
             'organization_id' => $orgA->id,
-            'invoice_number'  => 'INV-ALPHA-02',
-            'status'          => InvoiceStatus::OVERDUE,
-            'total'           => 500.00,
-            'currency'        => 'XOF',
-            'issue_date'      => now()->subDay(),
+            'invoice_number' => 'INV-ALPHA-02',
+            'client_name' => 'Client Yamoussoukro',
+            'status' => InvoiceStatus::OVERDUE,
+            'total' => 500.00,
+            'currency' => 'XOF',
+            'issue_date' => now()->subDay(),
         ]);
 
         // Factures pour Entreprise Beta (ne doivent PAS apparaître pour le comptable A)
         Invoice::factory()->create([
             'organization_id' => $orgB->id,
-            'invoice_number'  => 'INV-BETA-SECRET',
-            'status'          => InvoiceStatus::PAID,
-            'total'           => 99999.00,
-            'currency'        => 'XOF',
-            'issue_date'      => now(),
+            'invoice_number' => 'INV-BETA-SECRET',
+            'client_name' => 'Client Secret Beta',
+            'status' => InvoiceStatus::PAID,
+            'total' => 99999.00,
+            'currency' => 'XOF',
+            'issue_date' => now(),
         ]);
 
         $response = $this->actingAs($accountantA)->get(route('portal.dashboard'));
@@ -99,13 +102,63 @@ final class PortalDashboardTest extends TestCase
         $response->assertOk();
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Portal/Dashboard')
+            ->where('filters.period', '12m')
+            ->has('statuses', 5)
             ->has('stats')
             ->where('stats.total_invoices_count', 2)
+            ->where('stats.overdue_count', 1)
+            ->where('stats.collection_rate', 66.7)
+            ->where('stats.average_invoice_amount', '750.00')
             ->where('stats.total_billed', fn ($val) => in_array((string) $val, ['1500', '1500.00'], true))
             ->where('stats.total_paid', fn ($val) => in_array((string) $val, ['1000', '1000.00'], true))
             ->where('stats.total_overdue', fn ($val) => in_array((string) $val, ['500', '500.00'], true))
+            ->has('stats.monthly_series', 12)
+            ->has('stats.status_breakdown', 4)
+            ->has('stats.top_entities', 2)
+            ->where('stats.top_entities.0.name', 'Client Abidjan')
             ->has('stats.recent_invoices', 2)
             ->where('organization.name', 'Entreprise Alpha')
+        );
+    }
+
+    public function test_accountant_can_filter_portal_dashboard_by_period_and_status(): void
+    {
+        $org = Organization::factory()->create(['name' => 'Entreprise Alpha']);
+        $accountant = User::factory()->create([
+            'organization_id' => $org->id,
+            'role' => UserRole::ACCOUNTANT,
+        ]);
+
+        Invoice::factory()->create([
+            'organization_id' => $org->id,
+            'client_name' => 'Client Récent',
+            'status' => InvoiceStatus::SENT,
+            'total' => 25000.00,
+            'issue_date' => now()->subDays(4),
+        ]);
+
+        Invoice::factory()->create([
+            'organization_id' => $org->id,
+            'client_name' => 'Client Ancien',
+            'status' => InvoiceStatus::SENT,
+            'total' => 75000.00,
+            'issue_date' => now()->subDays(120),
+        ]);
+
+        $response = $this->actingAs($accountant)->get(route('portal.dashboard', [
+            'period' => '30d',
+            'status' => 'sent',
+        ]));
+
+        $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Portal/Dashboard')
+            ->where('filters.period', '30d')
+            ->where('filters.status', 'sent')
+            ->where('stats.total_invoices_count', 1)
+            ->has('stats.monthly_series', 30)
+            ->has('stats.top_entities', 1)
+            ->where('stats.top_entities.0.name', 'Client Récent')
         );
     }
 
@@ -114,7 +167,7 @@ final class PortalDashboardTest extends TestCase
         $organization = Organization::factory()->create();
         $accountant = User::factory()->create([
             'organization_id' => $organization->id,
-            'role'            => UserRole::ACCOUNTANT,
+            'role' => UserRole::ACCOUNTANT,
         ]);
 
         $response = $this->actingAs($accountant)->post(route('portal.logout'));

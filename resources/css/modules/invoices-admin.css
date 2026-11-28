@@ -115,7 +115,7 @@
 .filter-select {
     padding: 8px 12px;
     font-size: 13px;
-    border: 1px solid var(--border-subtle);
+    border: 1px solid var(--text-muted);
     border-radius: var(--radius-sm);
     background-color: var(--bg-surface);
     color: var(--text-primary);
@@ -123,10 +123,10 @@
     transition: var(--transition);
 }
 
-.filter-select:focus {
-    outline: none;
+.filter-select:focus-visible {
+    outline: 2px solid var(--blue-primary);
+    outline-offset: 2px;
     border-color: var(--blue-primary);
-    box-shadow: 0 0 0 3px var(--blue-ring);
 }
 
 .btn-reset-filter {

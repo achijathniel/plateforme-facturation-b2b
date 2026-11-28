@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\UserRole;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
@@ -42,7 +44,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('logout');
-        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])
+            ->middleware('throttle:web-admin-read')
+            ->name('dashboard');
         Route::get('/invoices', [AdminInvoiceController::class, 'index'])
             ->middleware('throttle:web-admin-read')
             ->name('invoices.index');

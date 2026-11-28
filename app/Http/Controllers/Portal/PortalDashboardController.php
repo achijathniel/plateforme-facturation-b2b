@@ -5,27 +5,34 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Portal;
 
 use App\Actions\Portal\GetPortalDashboardStatsAction;
+use App\Enums\InvoiceStatus;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\Portal\PortalDashboardFilterRequest;
 use Inertia\Inertia;
 use Inertia\Response;
 
 final class PortalDashboardController extends Controller
 {
     /**
-     * Affiche le tableau de bord de l'entreprise cliente avec ses métriques et factures récentes.
+     * Affiche le tableau de bord interactif de l'entreprise cliente.
      */
-    public function index(Request $request, GetPortalDashboardStatsAction $action): Response
+    public function index(PortalDashboardFilterRequest $request, GetPortalDashboardStatsAction $action): Response
     {
-        $organizationId = (int) $request->user()->organization_id;
-        $stats = $action->execute($organizationId);
+        $user = $request->user();
+        $user->loadMissing('organization:id,name');
+
+        $organizationId = (int) $user->organization_id;
+        $filter = $request->toDTO();
+        $stats = $action->execute($organizationId, $filter);
 
         return Inertia::render('Portal/Dashboard', [
-            'stats'        => $stats->toArray(),
+            'stats' => $stats->toArray(),
+            'filters' => $filter->toArray(),
             'organization' => [
-                'id'   => $request->user()->organization?->id ?? $organizationId,
-                'name' => $request->user()->organization?->name ?? 'Mon Entreprise',
+                'id' => $user->organization?->id ?? $organizationId,
+                'name' => $user->organization?->name ?? 'Mon Entreprise',
             ],
+            'statuses' => InvoiceStatus::toSelectOptions(),
         ]);
     }
 }

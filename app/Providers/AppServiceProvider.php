@@ -14,6 +14,8 @@ use App\Repositories\Eloquent\InvoiceRepository;
 use App\Repositories\Eloquent\OrganizationRepository;
 use App\Repositories\Eloquent\PostgresAdminDashboardRepository;
 use App\Repositories\Eloquent\PostgresPortalDashboardRepository;
+use App\Services\Dashboard\Contracts\DashboardAnalyticsFormatterInterface;
+use App\Services\Dashboard\DashboardAnalyticsFormatter;
 use App\Services\Imports\Contracts\OrganizationSpreadsheetReaderInterface;
 use App\Services\Imports\Contracts\OrganizationTemplateGeneratorInterface;
 use App\Services\Imports\OpenSpoutOrganizationReader;
@@ -37,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AdminDashboardRepositoryInterface::class, PostgresAdminDashboardRepository::class);
         $this->app->bind(OrganizationRepositoryInterface::class, OrganizationRepository::class);
         $this->app->bind(PortalDashboardRepositoryInterface::class, PostgresPortalDashboardRepository::class);
+        $this->app->bind(DashboardAnalyticsFormatterInterface::class, DashboardAnalyticsFormatter::class);
         $this->app->bind(ClientRepositoryInterface::class, ClientRepository::class);
         $this->app->bind(OrganizationSpreadsheetReaderInterface::class, OpenSpoutOrganizationReader::class);
         $this->app->bind(OrganizationTemplateGeneratorInterface::class, OpenSpoutOrganizationTemplateGenerator::class);

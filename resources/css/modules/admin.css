@@ -312,6 +312,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .data-card-title-group {
@@ -452,5 +454,14 @@
 }
 .badge-draft .badge-dot {
     background-color: var(--text-muted);
+}
+
+.badge-cancelled {
+    background-color: #f8fafc;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-subtle);
+}
+.badge-cancelled .badge-dot {
+    background-color: var(--chart-cancelled);
 }
 

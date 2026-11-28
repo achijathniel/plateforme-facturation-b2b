@@ -32,3 +32,6 @@
 
 /* 8. Vue détaillée imprimable, toasts SweetAlert2 & média d'impression */
 @import './modules/invoice-show-print.css';
+
+/* 9. Graphiques analytiques et filtres du tableau de bord */
+@import './modules/dashboard-analytics.css';

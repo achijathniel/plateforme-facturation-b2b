@@ -31,4 +31,20 @@ enum InvoiceStatus: string
     {
         return in_array($this, [self::SENT, self::OVERDUE], true);
     }
+
+    /**
+     * Options normalisées (value/label) pour les filtres et listes déroulantes frontend.
+     *
+     * @return array<int, array{value: string, label: string}>
+     */
+    public static function toSelectOptions(): array
+    {
+        return array_map(
+            static fn (self $status): array => [
+                'value' => $status->value,
+                'label' => $status->label(),
+            ],
+            self::cases()
+        );
+    }
 }

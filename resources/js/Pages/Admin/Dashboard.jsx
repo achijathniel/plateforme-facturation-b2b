@@ -1,133 +1,67 @@
 import { BarChart3, CheckCircle2, Clock, Wallet } from 'lucide-react';
 import AdminLayout from '../../Layouts/AdminLayout';
-import MetricCard from '../../Components/MetricCard';
-import StatusBadge from '../../Components/StatusBadge';
+import DashboardPageView from '../../Components/Dashboard/DashboardPageView';
 import { formatCurrency, formatNumber } from '../../Utils/formatters';
 
-export default function Dashboard({ auth, stats }) {
+export default function Dashboard({ auth, stats, filters = {}, organizations = [], statuses = [] }) {
+    const kpis = [
+        {
+            key: 'billed',
+            label: "Chiffre d'Affaires Facturé",
+            value: formatCurrency(stats?.total_billed),
+            currency: 'XOF',
+            icon: <Wallet size={18} aria-hidden="true" />,
+            subtext: 'Total émis sur la sélection',
+            highlightBlue: true,
+        },
+        {
+            key: 'paid',
+            label: 'Recouvrement Encaissé',
+            value: formatCurrency(stats?.total_paid),
+            currency: 'XOF',
+            icon: <CheckCircle2 size={18} aria-hidden="true" />,
+            subtext: `${stats?.collection_rate ?? 0} % du montant facturé`,
+            valueColor: 'var(--green-text)',
+        },
+        {
+            key: 'overdue',
+            label: 'Montant en Retard',
+            value: formatCurrency(stats?.total_overdue),
+            currency: 'XOF',
+            icon: <Clock size={18} aria-hidden="true" />,
+            subtext: `${formatNumber(stats?.overdue_count)} facture(s) échue(s)`,
+            valueColor: 'var(--rose-text)',
+        },
+        {
+            key: 'volume',
+            label: "Volume d'Activité",
+            value: formatNumber(stats?.total_invoices_count),
+            icon: <BarChart3 size={18} aria-hidden="true" />,
+            subtext: `Moy. ${formatCurrency(stats?.average_invoice_amount, 'XOF')} · ${formatNumber(stats?.total_organizations_count)} org.`,
+            highlightBlue: true,
+        },
+    ];
+
     return (
         <AdminLayout auth={auth} title="Tableau de bord - Administration">
-            {/* Bannière d'accueil claire à liseré bleu */}
-            <div className="admin-banner">
-                <span className="admin-banner-tag">
-                    Session Administrateur Active
-                </span>
-                <h1 className="admin-banner-heading">
-                    Bienvenue, {auth?.user?.name} !
-                </h1>
-                <p className="admin-banner-text">
-                    Supervision globale de la facturation B2B. Données consolidées en temps réel sur PostgreSQL 16 avec calculs à précision arbitraire et mise en cache haute performance.
-                </p>
-            </div>
-
-            {/* Grille des cartes d'indicateurs financiers réels */}
-            <div className="metrics-grid">
-                <MetricCard
-                    label="Chiffre d'Affaires Global"
-                    value={formatCurrency(stats?.total_billed)}
-                    currency="XOF"
-                    icon={<Wallet size={18} aria-hidden="true" />}
-                    subtext="Totalité des factures émises"
-                    highlightBlue={true}
-                />
-
-                <MetricCard
-                    label="Recouvrement Encaissé"
-                    value={formatCurrency(stats?.total_paid)}
-                    currency="XOF"
-                    icon={<CheckCircle2 size={18} aria-hidden="true" />}
-                    subtext="Statut 'Payée' acquitté"
-                    valueColor="var(--green-text)"
-                />
-
-                <MetricCard
-                    label="Montant en Retard"
-                    value={formatCurrency(stats?.total_overdue)}
-                    currency="XOF"
-                    icon={<Clock size={18} aria-hidden="true" />}
-                    subtext="Factures échues non soldées"
-                    valueColor="var(--rose-text)"
-                />
-
-                <MetricCard
-                    label="Volume d'Activité"
-                    value={formatNumber(stats?.total_invoices_count)}
-                    icon={<BarChart3 size={18} aria-hidden="true" />}
-                    subtext={`Réparties sur ${formatNumber(stats?.total_organizations_count)} entreprises clientes`}
-                    highlightBlue={true}
-                />
-            </div>
-
-            {/* Tableau Sobre des Dernières Factures Émises */}
-            <div className="data-card">
-                <div className="data-card-header">
-                    <div className="data-card-title-group">
-                        <h3 className="data-card-title">
-                            Dernières Factures Émises
-                        </h3>
-                        <p className="data-card-subtitle">
-                            Flux récent extrait de la base PostgreSQL
-                        </p>
-                    </div>
-                </div>
-
-                <div className="data-table-wrapper">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Numéro</th>
-                                <th scope="col">Entreprise Cliente</th>
-                                <th scope="col">Date d'Émission</th>
-                                <th scope="col">Échéance</th>
-                                <th scope="col">Montant Total</th>
-                                <th scope="col">Statut</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {stats?.recent_invoices && stats.recent_invoices.length > 0 ? (
-                                stats.recent_invoices.map((invoice) => (
-                                    <tr key={invoice.id || invoice.invoice_number}>
-                                        <td>
-                                            <span className="table-code">
-                                                {invoice.invoice_number}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <strong>{invoice.organization_name || 'Entreprise N/A'}</strong>
-                                        </td>
-                                        <td>{invoice.issue_date}</td>
-                                        <td>{invoice.due_date}</td>
-                                        <td>
-                                            <span className="table-amount">
-                                                {formatCurrency(invoice.total)}
-                                            </span>
-                                            <span className="table-currency">
-                                                {invoice.currency || 'XOF'}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <StatusBadge status={invoice.status} />
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td
-                                        colSpan="6"
-                                        style={{
-                                            textAlign: 'center',
-                                            padding: '32px',
-                                            color: 'var(--text-muted)',
-                                        }}
-                                    >
-                                        Aucune facture enregistrée pour le moment.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <DashboardPageView
+                routeUrl="/admin/dashboard"
+                headingTitle="Tableau de bord financier"
+                headingSubtitle={`Bienvenue, ${auth?.user?.name}. Analysez le chiffre d'affaires, les encaissements et la performance par entreprise en temps réel.`}
+                stats={stats}
+                filters={filters}
+                statuses={statuses}
+                organizations={organizations}
+                showOrganizationFilter={true}
+                kpis={kpis}
+                topEntitiesTitle="Top 5 des entreprises par chiffre d'affaires"
+                topEntitiesSubtitle="Cliquez sur une entreprise pour filtrer l'ensemble du tableau de bord"
+                enableEntityFilter={true}
+                recentInvoicesSubtitle="Les 6 dernières factures correspondant aux filtres actifs"
+                recentInvoicesPartyLabel="Entreprise Cliente"
+                recentInvoicesAllUrl="/admin/invoices"
+                recentInvoicesAllLabel="Voir toutes les factures →"
+            />
         </AdminLayout>
     );
 }

@@ -4,19 +4,26 @@ declare(strict_types=1);
 
 namespace App\Repositories\Contracts;
 
+use App\DTOs\Dashboard\DashboardFilterDTO;
+
 interface PortalDashboardRepositoryInterface
 {
     /**
-     * Récupère les métriques financières et les factures récentes d'une entreprise spécifique.
+     * Récupère les métriques financières, séries graphiques et factures récentes d'une entreprise.
      *
-     * @param int $organizationId
      * @return array{
      *     total_billed: string,
      *     total_paid: string,
      *     total_overdue: string,
+     *     overdue_count: int,
      *     total_invoices: int,
+     *     collection_rate: float,
+     *     average_invoice_amount: string,
+     *     monthly_series: array<int, array{key: string, label: string, billed: float, paid: float, overdue: float, count: int}>,
+     *     status_breakdown: array<int, array{status: string, label: string, count: int, amount: float}>,
+     *     top_entities: array<int, array{id: int|null, name: string, invoices_count: int, total_billed: float, total_paid: float}>,
      *     recent_invoices: array<int, array<string, mixed>>
      * }
      */
-    public function getMetricsForOrganization(int $organizationId): array;
+    public function getMetricsForOrganization(int $organizationId, ?DashboardFilterDTO $filter = null): array;
 }

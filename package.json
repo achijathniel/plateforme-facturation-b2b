@@ -20,6 +20,7 @@
         "lucide-react": "^1.79.0",
         "react": "^19.3.0",
         "react-dom": "^19.3.0",
+        "recharts": "^3.11.2",
         "sweetalert2": "^11.26.25"
     }
 }
