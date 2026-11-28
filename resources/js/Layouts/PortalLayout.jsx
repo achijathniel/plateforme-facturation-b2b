@@ -5,6 +5,7 @@ import {
     FileText,
     LayoutDashboard,
     Plus,
+    Users,
 } from 'lucide-react';
 import AppSidebarLayout from '../Components/Layout/AppSidebarLayout';
 import UserControls from '../Components/UserControls';
@@ -45,6 +46,13 @@ export default function PortalLayout({ auth, title, organization, children }) {
                 pathname.startsWith('/portal/invoices') &&
                 !pathname.includes('/create') &&
                 !currentStatus,
+        },
+        {
+            key: 'portal-clients',
+            label: 'Mes Clients',
+            href: '/portal/clients',
+            icon: <Users size={17} aria-hidden="true" />,
+            isActive: pathname.startsWith('/portal/clients'),
         },
         {
             key: 'portal-payments',

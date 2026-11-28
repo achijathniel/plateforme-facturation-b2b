@@ -100,32 +100,60 @@ Route::prefix('portal')->name('portal.')->group(function () {
         Route::post('/logout', [PortalAuthController::class, 'destroy'])->name('logout');
         Route::get('/dashboard', fn () => redirect()->route('portal.dashboard'));
 
-        // Annuaire et recherche instantanée de clients B2B
+        // Annuaire et gestion des clients B2B du comptable
+        Route::get('/clients', [PortalClientController::class, 'index'])
+            ->middleware('throttle:web-portal-read')
+            ->name('clients.index');
+        Route::get('/clients/create', [PortalClientController::class, 'create'])
+            ->middleware('throttle:web-portal-read')
+            ->name('clients.create');
         Route::get('/clients/search', [PortalClientController::class, 'search'])
             ->middleware('throttle:web-portal-read')
             ->name('clients.search');
         Route::post('/clients', [PortalClientController::class, 'store'])
-            ->middleware('throttle:web-invoice-create')
+            ->middleware('throttle:web-portal-client-write')
             ->name('clients.store');
+        Route::get('/clients/{id}', [PortalClientController::class, 'show'])
+            ->whereNumber('id')
+            ->middleware('throttle:web-portal-read')
+            ->name('clients.show');
+        Route::get('/clients/{id}/edit', [PortalClientController::class, 'edit'])
+            ->whereNumber('id')
+            ->middleware('throttle:web-portal-read')
+            ->name('clients.edit');
+        Route::put('/clients/{id}', [PortalClientController::class, 'update'])
+            ->whereNumber('id')
+            ->middleware('throttle:web-portal-client-write')
+            ->name('clients.update');
+        Route::delete('/clients/{id}', [PortalClientController::class, 'destroy'])
+            ->whereNumber('id')
+            ->middleware('throttle:web-portal-client-write')
+            ->name('clients.destroy');
 
         // Gestion et émission des factures par le comptable
         Route::get('/invoices', [PortalInvoiceController::class, 'index'])
             ->middleware('throttle:web-portal-read')
             ->name('invoices.index');
-        Route::get('/invoices/create', [PortalInvoiceController::class, 'create'])->name('invoices.create');
+        Route::get('/invoices/create', [PortalInvoiceController::class, 'create'])
+            ->middleware('throttle:web-portal-read')
+            ->name('invoices.create');
         Route::post('/invoices', [PortalInvoiceController::class, 'store'])
             ->middleware('throttle:web-invoice-create')
             ->name('invoices.store');
         Route::get('/invoices/{id}', [PortalInvoiceController::class, 'show'])
+            ->whereNumber('id')
             ->middleware('throttle:web-portal-read')
             ->name('invoices.show');
         Route::get('/invoices/{id}/edit', [PortalInvoiceController::class, 'edit'])
+            ->whereNumber('id')
             ->middleware('throttle:web-portal-read')
             ->name('invoices.edit');
         Route::put('/invoices/{id}', [PortalInvoiceController::class, 'update'])
+            ->whereNumber('id')
             ->middleware('throttle:web-invoice-create')
             ->name('invoices.update');
         Route::post('/invoices/{id}/send', [PortalInvoiceController::class, 'send'])
+            ->whereNumber('id')
             ->middleware('throttle:web-invoice-create')
             ->name('invoices.send');
     });

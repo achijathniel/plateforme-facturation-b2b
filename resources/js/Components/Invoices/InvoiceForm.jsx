@@ -43,19 +43,30 @@ const createEmptyItem = () => ({
  *         }>
  *     },
  *     defaultDueDate?: string,
+ *     preselectedClient?: {
+ *         id: number,
+ *         name: string,
+ *         email?: string,
+ *         address?: string,
+ *         tax_number?: string,
+ *         phone?: string
+ *     }|null,
  *     submitUrl: string,
  *     method?: 'post' | 'put',
  *     backUrl: string,
+ *     backLabel?: string,
  *     isEdit?: boolean
  * }} props
  */
 export default function InvoiceForm({
     organization,
     invoice,
+    preselectedClient = null,
     defaultDueDate = '',
     submitUrl,
     method = 'post',
     backUrl,
+    backLabel = '← Retour au tableau de bord',
     isEdit = false,
 }) {
     const initialItems = invoice?.items && invoice.items.length > 0
@@ -70,12 +81,12 @@ export default function InvoiceForm({
     const [submittingAction, setSubmittingAction] = useState('draft');
 
     const { data, setData, post, put, processing, errors, transform } = useForm({
-        client_id: invoice?.client_id || null,
-        client_name: invoice?.client_name || '',
-        client_email: invoice?.client_email || '',
-        client_address: invoice?.client_address || '',
-        client_tax_number: invoice?.client_tax_number || '',
-        client_phone: invoice?.client_phone || '',
+        client_id: invoice?.client_id ?? preselectedClient?.id ?? null,
+        client_name: invoice?.client_name ?? preselectedClient?.name ?? '',
+        client_email: invoice?.client_email ?? preselectedClient?.email ?? '',
+        client_address: invoice?.client_address ?? preselectedClient?.address ?? '',
+        client_tax_number: invoice?.client_tax_number ?? preselectedClient?.tax_number ?? '',
+        client_phone: invoice?.client_phone ?? preselectedClient?.phone ?? '',
         due_date: invoice?.due_date || defaultDueDate || '',
         notes: invoice?.notes || '',
         action: 'draft',
@@ -191,7 +202,7 @@ export default function InvoiceForm({
                 <div>
                     <div className="breadcrumb-nav">
                         <Link href={backUrl} className="breadcrumb-link">
-                            {isEdit ? '← Retour aux détails de la facture' : '← Retour au tableau de bord'}
+                            {isEdit ? '← Retour aux détails de la facture' : backLabel}
                         </Link>
                     </div>
                     <h1 className="portal-page-title">
@@ -222,7 +233,7 @@ export default function InvoiceForm({
                 <div className="form-section-card">
                     <div className="section-header-flex">
                         <div>
-                            <h3 className="section-title">1. Entreprise Cliente (Destinataire B2B)</h3>
+                            <h2 className="section-title">1. Entreprise Cliente (Destinataire B2B)</h2>
                             <p className="section-description">
                                 {isEdit
                                     ? "Modifiez les coordonnées de l'entreprise cliente destinataire de cette facture."
@@ -346,7 +357,7 @@ export default function InvoiceForm({
                 {/* Section 3 : Modalités de règlement & Récapitulatif */}
                 <div className="invoice-bottom-grid" style={{ marginTop: '24px' }}>
                     <div className="form-section-card">
-                        <h3 className="section-title">3. Modalités &amp; Règlement</h3>
+                        <h2 className="section-title">3. Modalités &amp; Règlement</h2>
                         <p className="section-description">
                             Date limite de règlement et mentions particulières.
                         </p>

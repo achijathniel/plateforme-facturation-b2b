@@ -35,3 +35,6 @@
 
 /* 9. Graphiques analytiques et filtres du tableau de bord */
 @import './modules/dashboard-analytics.css';
+
+/* 10. Annuaire et fiche 360° Clients B2B (Portail) */
+@import './modules/clients-portal.css';

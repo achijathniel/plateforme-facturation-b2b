@@ -235,6 +235,31 @@ class FrontendArchitectureTest extends TestCase
     }
 
     /**
+     * Vérifie que les pages CRUD clients du portail restent des Skinny Pages (< 60 lignes)
+     * et réutilisent le composant partagé ClientForm.
+     */
+    public function test_portal_client_pages_are_skinny_and_reuse_client_form(): void
+    {
+        $checks = [
+            resource_path('js/Pages/Portal/Clients/Create.jsx'),
+            resource_path('js/Pages/Portal/Clients/Edit.jsx'),
+        ];
+
+        foreach ($checks as $path) {
+            $this->assertFileExists($path);
+            $content = (string) file_get_contents($path);
+            $this->assertMatchesRegularExpression('/<ClientForm\b/', $content);
+
+            $lines = count(explode("\n", $content));
+            $this->assertLessThan(
+                60,
+                $lines,
+                "{$path} est trop verbeux ({$lines} lignes). La logique doit rester dans ClientForm."
+            );
+        }
+    }
+
+    /**
      * Vérifie qu'aucun fichier JS/JSX n'importe sweetalert2 statiquement afin de préserver le code-splitting.
      */
     public function test_sweetalert2_is_never_statically_imported(): void

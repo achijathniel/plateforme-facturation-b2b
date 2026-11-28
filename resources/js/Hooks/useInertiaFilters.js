@@ -109,6 +109,19 @@ export default function useInertiaFilters({
         }
     }, [navigateWith, searchKey]);
 
+    const setFields = useCallback((patch, immediate = true) => {
+        const next = { ...valuesRef.current, ...patch };
+        valuesRef.current = next;
+        setValues(next);
+
+        if (immediate) {
+            if (Object.prototype.hasOwnProperty.call(patch, searchKey)) {
+                lastSubmittedSearchRef.current = patch[searchKey] ?? '';
+            }
+            navigateWith(next);
+        }
+    }, [navigateWith, searchKey]);
+
     const submitFilters = useCallback((e) => {
         if (e) e.preventDefault();
         const current = valuesRef.current;
@@ -137,6 +150,7 @@ export default function useInertiaFilters({
     return {
         values,
         setField,
+        setFields,
         submitFilters,
         resetFilters,
         hasActiveFilters,

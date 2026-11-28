@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Requests\Clients;
 
 use App\DTOs\Clients\ClientDTO;
+use App\Models\Client;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -15,13 +17,13 @@ class StoreClientRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user() !== null && $this->user()->organization_id !== null;
+        return $this->user()?->can('create', Client::class) ?? false;
     }
 
     /**
      * Règles de validation pour la création d'un client.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -34,14 +36,14 @@ class StoreClientRequest extends FormRequest
                 'max:255',
                 Rule::unique('clients', 'name')->where(
                     fn ($query) => $query->where('organization_id', $organizationId)
-                                         ->whereNull('deleted_at')
+                        ->whereNull('deleted_at')
                 ),
             ],
-            'email'      => ['nullable', 'email', 'max:255'],
-            'phone'      => ['nullable', 'string', 'max:30'],
-            'address'    => ['nullable', 'string', 'max:1000'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'address' => ['nullable', 'string', 'max:1000'],
             'tax_number' => ['nullable', 'string', 'max:50'],
-            'notes'      => ['nullable', 'string', 'max:2000'],
+            'notes' => ['nullable', 'string', 'max:2000'],
         ];
     }
 
@@ -54,9 +56,9 @@ class StoreClientRequest extends FormRequest
     {
         return [
             'name.required' => "Le nom ou la raison sociale de l'entreprise cliente est obligatoire.",
-            'name.max'      => 'Le nom ne peut pas dépasser 255 caractères.',
-            'name.unique'   => 'Un client avec cette raison sociale existe déjà dans votre carnet d\'adresses.',
-            'email.email'   => "L'adresse email doit être une adresse valide.",
+            'name.max' => 'Le nom ne peut pas dépasser 255 caractères.',
+            'name.unique' => 'Un client avec cette raison sociale existe déjà dans votre carnet d\'adresses.',
+            'email.email' => "L'adresse email doit être une adresse valide.",
         ];
     }
 

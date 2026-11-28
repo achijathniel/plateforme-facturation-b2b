@@ -55,7 +55,8 @@ class ClientPolicy
      */
     public function update(User $user, Client $client): bool
     {
-        return in_array($user->role, [UserRole::DIRECTOR, UserRole::ACCOUNTANT], true)
+        return $user->organization_id !== null
+            && in_array($user->role, [UserRole::DIRECTOR, UserRole::ACCOUNTANT], true)
             && $user->organization_id === $client->organization_id;
     }
 
@@ -64,7 +65,8 @@ class ClientPolicy
      */
     public function delete(User $user, Client $client): bool
     {
-        return in_array($user->role, [UserRole::DIRECTOR, UserRole::ACCOUNTANT], true)
+        return $user->organization_id !== null
+            && in_array($user->role, [UserRole::DIRECTOR, UserRole::ACCOUNTANT], true)
             && $user->organization_id === $client->organization_id;
     }
 }

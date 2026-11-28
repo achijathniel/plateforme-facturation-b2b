@@ -14,6 +14,7 @@ use App\Http\Requests\Invoices\StoreInvoiceRequest;
 use App\Http\Requests\Invoices\UpdateInvoiceRequest;
 use App\Http\Requests\Portal\PortalInvoiceFilterRequest;
 use App\Models\Invoice;
+use App\Repositories\Contracts\ClientRepositoryInterface;
 use App\Repositories\Contracts\InvoiceRepositoryInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -37,19 +38,19 @@ final class PortalInvoiceController extends Controller
         $invoices = $action->execute($request->user(), $filterData);
 
         return Inertia::render('Portal/Invoices/Index', [
-            'invoices'     => $invoices,
+            'invoices' => $invoices,
             'organization' => [
-                'id'   => $request->user()->organization?->id,
+                'id' => $request->user()->organization?->id,
                 'name' => $request->user()->organization?->name ?? 'Mon Entreprise',
             ],
-            'filters'      => [
-                'search'         => $filterData->search,
-                'status'         => $filterData->status?->value,
-                'per_page'       => $filterData->perPage,
-                'sort_by'        => $filterData->sortBy,
+            'filters' => [
+                'search' => $filterData->search,
+                'status' => $filterData->status?->value,
+                'per_page' => $filterData->perPage,
+                'sort_by' => $filterData->sortBy,
                 'sort_direction' => $filterData->sortDirection,
             ],
-            'statuses'     => collect(InvoiceStatus::cases())->map(fn (InvoiceStatus $status) => [
+            'statuses' => collect(InvoiceStatus::cases())->map(fn (InvoiceStatus $status) => [
                 'value' => $status->value,
                 'label' => $status->label(),
             ]),
@@ -59,16 +60,37 @@ final class PortalInvoiceController extends Controller
     /**
      * Affiche le formulaire de création d'une nouvelle facture pour le comptable.
      */
-    public function create(Request $request): Response
-    {
+    public function create(
+        Request $request,
+        ClientRepositoryInterface $clientRepository
+    ): Response {
         Gate::authorize('create', Invoice::class);
+
+        $clientId = $request->integer('client_id');
+        $preselectedClient = null;
+
+        if ($clientId > 0) {
+            $client = $clientRepository->findById($clientId, (int) $request->user()->organization_id);
+
+            if ($client) {
+                $preselectedClient = [
+                    'id' => $client->id,
+                    'name' => $client->name,
+                    'email' => $client->email ?? '',
+                    'phone' => $client->phone ?? '',
+                    'address' => $client->address ?? '',
+                    'tax_number' => $client->tax_number ?? '',
+                ];
+            }
+        }
 
         return Inertia::render('Portal/Invoices/Create', [
             'organization' => [
-                'id'   => $request->user()->organization?->id,
+                'id' => $request->user()->organization?->id,
                 'name' => $request->user()->organization?->name ?? 'Mon Entreprise',
             ],
             'defaultDueDate' => now()->addDays(30)->toDateString(),
+            'preselectedClient' => $preselectedClient,
         ]);
     }
 
@@ -136,41 +158,41 @@ final class PortalInvoiceController extends Controller
 
         return Inertia::render('Portal/Invoices/Show', [
             'invoice' => [
-                'id'                => $invoice->id,
-                'client_id'         => $invoice->client_id,
-                'invoice_number'    => $invoice->invoice_number,
-                'client_name'       => $invoice->client_name,
-                'client_email'      => $invoice->client_email,
-                'client_address'    => $invoice->client_address,
+                'id' => $invoice->id,
+                'client_id' => $invoice->client_id,
+                'invoice_number' => $invoice->invoice_number,
+                'client_name' => $invoice->client_name,
+                'client_email' => $invoice->client_email,
+                'client_address' => $invoice->client_address,
                 'client_tax_number' => $invoice->client_tax_number,
-                'client_phone'      => $invoice->client_phone,
-                'status'            => $invoice->status->value,
-                'issue_date'        => $invoice->issue_date?->toDateString(),
-                'due_date'          => $invoice->due_date?->toDateString(),
-                'subtotal'          => (string) $invoice->subtotal,
-                'tax_amount'        => (string) $invoice->tax_amount,
-                'total'             => (string) $invoice->total,
-                'currency'          => $invoice->currency ?? 'XOF',
-                'notes'             => $invoice->notes,
-                'can_edit'          => Gate::allows('update', $invoice),
-                'can_send'          => $invoice->status === InvoiceStatus::DRAFT && Gate::allows('update', $invoice),
-                'items'             => $invoice->items->map(fn ($item) => [
-                    'id'          => $item->id,
+                'client_phone' => $invoice->client_phone,
+                'status' => $invoice->status->value,
+                'issue_date' => $invoice->issue_date?->toDateString(),
+                'due_date' => $invoice->due_date?->toDateString(),
+                'subtotal' => (string) $invoice->subtotal,
+                'tax_amount' => (string) $invoice->tax_amount,
+                'total' => (string) $invoice->total,
+                'currency' => $invoice->currency ?? 'XOF',
+                'notes' => $invoice->notes,
+                'can_edit' => Gate::allows('update', $invoice),
+                'can_send' => $invoice->status === InvoiceStatus::DRAFT && Gate::allows('update', $invoice),
+                'items' => $invoice->items->map(fn ($item) => [
+                    'id' => $item->id,
                     'description' => $item->description,
-                    'quantity'    => (float) $item->quantity,
-                    'unit_price'  => (string) $item->unit_price,
-                    'total'       => (string) $item->total,
+                    'quantity' => (float) $item->quantity,
+                    'unit_price' => (string) $item->unit_price,
+                    'total' => (string) $item->total,
                 ]),
-                'payments'          => $invoice->payments->map(fn ($p) => [
-                    'id'             => $p->id,
+                'payments' => $invoice->payments->map(fn ($p) => [
+                    'id' => $p->id,
                     'payment_method' => $p->payment_method->value,
-                    'status'         => $p->status->value,
-                    'amount'         => (string) $p->amount,
-                    'paid_at'        => $p->paid_at?->toDateString(),
+                    'status' => $p->status->value,
+                    'amount' => (string) $p->amount,
+                    'paid_at' => $p->paid_at?->toDateString(),
                 ]),
             ],
             'organization' => [
-                'id'   => $invoice->organization?->id,
+                'id' => $invoice->organization?->id,
                 'name' => $invoice->organization?->name,
             ],
         ]);
@@ -195,26 +217,26 @@ final class PortalInvoiceController extends Controller
 
         return Inertia::render('Portal/Invoices/Edit', [
             'invoice' => [
-                'id'                => $invoice->id,
-                'client_id'         => $invoice->client_id,
-                'invoice_number'    => $invoice->invoice_number,
-                'client_name'       => $invoice->client_name ?? '',
-                'client_email'      => $invoice->client_email ?? '',
-                'client_address'    => $invoice->client_address ?? '',
+                'id' => $invoice->id,
+                'client_id' => $invoice->client_id,
+                'invoice_number' => $invoice->invoice_number,
+                'client_name' => $invoice->client_name ?? '',
+                'client_email' => $invoice->client_email ?? '',
+                'client_address' => $invoice->client_address ?? '',
                 'client_tax_number' => $invoice->client_tax_number ?? '',
-                'client_phone'      => $invoice->client_phone ?? '',
-                'status'            => $invoice->status->value,
-                'due_date'          => $invoice->due_date?->toDateString(),
-                'notes'             => $invoice->notes ?? '',
-                'items'             => $invoice->items->map(fn ($item) => [
-                    'id'          => $item->id,
+                'client_phone' => $invoice->client_phone ?? '',
+                'status' => $invoice->status->value,
+                'due_date' => $invoice->due_date?->toDateString(),
+                'notes' => $invoice->notes ?? '',
+                'items' => $invoice->items->map(fn ($item) => [
+                    'id' => $item->id,
                     'description' => $item->description,
-                    'quantity'    => (float) $item->quantity,
-                    'unit_price'  => (string) $item->unit_price,
+                    'quantity' => (float) $item->quantity,
+                    'unit_price' => (string) $item->unit_price,
                 ]),
             ],
             'organization' => [
-                'id'   => $invoice->organization?->id,
+                'id' => $invoice->organization?->id,
                 'name' => $invoice->organization?->name,
             ],
         ]);

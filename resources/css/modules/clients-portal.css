@@ -1,0 +1,136 @@
+/* ==========================================================================
+   MODULE CSS : ANNUAIRE & FICHE 360° CLIENTS B2B (PORTAIL COMPTABLE)
+   ========================================================================== */
+
+.portal-page-header-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.portal-client-actions-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.portal-client-title-spaced {
+    margin-top: 8px;
+}
+
+.portal-client-section-spaced {
+    margin-bottom: 24px;
+}
+
+.portal-client-card-header-padded {
+    padding: 16px 20px;
+    margin: 0;
+}
+
+.portal-client-notes-block {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-light);
+}
+
+.portal-client-notes-text {
+    margin-top: 6px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    white-space: pre-line;
+    line-height: 1.5;
+}
+
+.portal-client-empty-cell {
+    padding: 24px;
+}
+
+/* Contraste non-textuel >= 3:1 (WCAG 2.2 SC 1.4.11) pour champs formulaires & filtres clients */
+.clients-scope .form-input,
+.clients-scope .filter-input {
+    border-color: var(--text-muted);
+}
+
+.clients-scope .form-input.input-error {
+    border-color: var(--rose-text);
+}
+
+.clients-scope .form-input:focus,
+.clients-scope .filter-input:focus {
+    outline: 2px solid transparent;
+    border-color: var(--blue-primary);
+}
+
+.clients-scope .breadcrumb-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+}
+
+/* Table dédiée 5 colonnes totalisant 100% */
+.clients-table {
+    table-layout: auto;
+}
+
+@media (min-width: 1180px) {
+    .clients-table {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+    .clients-col-name {
+        width: 26%;
+    }
+
+    .clients-col-contact {
+        width: 24%;
+    }
+
+    .clients-col-invoices {
+        width: 9%;
+        text-align: center;
+    }
+
+    .clients-col-total {
+        width: 14%;
+        white-space: nowrap;
+    }
+
+    .clients-col-actions {
+        width: 27%;
+        text-align: right;
+    }
+}
+
+.clients-actions-group {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* Bouton d'action destructrice / archivage */
+.btn-danger-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 28px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    background-color: transparent;
+    border: 1px solid var(--rose-border);
+    color: var(--rose-text);
+}
+
+.btn-danger-outline:hover {
+    background-color: var(--rose-bg);
+    border-color: var(--rose-text);
+}
