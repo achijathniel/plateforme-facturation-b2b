@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import AppSidebarLayout from '../Components/Layout/AppSidebarLayout';
 import UserControls from '../Components/UserControls';
-import { buildInvoiceStatusQuickItems, parseInertiaUrl } from '../Utils/navigationHelpers';
+import { parseInertiaUrl } from '../Utils/navigationHelpers';
 
 /**
  * Layout principal pour les vues de l'espace administration.
@@ -22,7 +22,7 @@ import { buildInvoiceStatusQuickItems, parseInertiaUrl } from '../Utils/navigati
  */
 export default function AdminLayout({ auth, title, children }) {
     const { url } = usePage();
-    const { pathname, currentStatus } = parseInertiaUrl(url);
+    const { pathname } = parseInertiaUrl(url);
 
     const primaryNav = [
         {
@@ -44,20 +44,9 @@ export default function AdminLayout({ auth, title, children }) {
             label: 'Factures',
             href: '/admin/invoices',
             icon: <FileText size={17} aria-hidden="true" />,
-            isActive: pathname.startsWith('/admin/invoices') && !currentStatus,
+            isActive: pathname.startsWith('/admin/invoices'),
         },
     ];
-
-    const quickSection = {
-        title: 'Suivi factures',
-        items: buildInvoiceStatusQuickItems({
-            keyPrefix: 'admin-invoices',
-            basePath: '/admin/invoices',
-            pathname,
-            currentStatus,
-            statuses: ['paid', 'sent', 'overdue', 'draft'],
-        }),
-    };
 
     return (
         <AppSidebarLayout
@@ -71,7 +60,6 @@ export default function AdminLayout({ auth, title, children }) {
                 href: '/admin/dashboard',
             }}
             primaryNav={primaryNav}
-            quickSection={quickSection}
             topbarContext="Espace Administrateur"
             topbarAction={{
                 href: '/admin/organizations/create',
