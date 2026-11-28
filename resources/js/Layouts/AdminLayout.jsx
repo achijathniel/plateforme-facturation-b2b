@@ -4,7 +4,6 @@ import {
     Building2,
     FileText,
     LayoutDashboard,
-    Plus,
 } from 'lucide-react';
 import AppSidebarLayout from '../Components/Layout/AppSidebarLayout';
 import UserControls from '../Components/UserControls';
@@ -61,11 +60,6 @@ export default function AdminLayout({ auth, title, children }) {
             }}
             primaryNav={primaryNav}
             topbarContext="Espace Administrateur"
-            topbarAction={{
-                href: '/admin/organizations/create',
-                label: 'Nouvelle entreprise',
-                icon: <Plus size={15} aria-hidden="true" />,
-            }}
             topbarRight={<UserControls auth={auth} logoutUrl="/admin/logout" />}
         >
             {children}
